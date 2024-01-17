@@ -3,10 +3,14 @@
 #include "sqlite/sqlite3.c"
 #include <gtk/gtk.h>
 
-static void activate(GtkApplication *app, gpointer user_data);
+static void launch(GtkApplication *app, gpointer user_data);
+static void activate_menu(GtkApplication *app, gpointer user_data);
 static void on_tab_selected(GtkNotebook *notebook, GtkWidget *page, guint page_num, gpointer user_data);
 GtkWidget *create_menu_window(GtkApplication *app);
 GtkWidget *create_login_window(GtkApplication *app);
+GtkWidget *login_window = NULL;
+
+
 
 //Animation lorsque l'utilisateur change d'onglet dans le menu
 static void on_tab_selected(GtkNotebook *notebook, GtkWidget *page, guint page_num, gpointer user_data) {
@@ -15,7 +19,7 @@ static void on_tab_selected(GtkNotebook *notebook, GtkWidget *page, guint page_n
 
 //Menu principal
 GtkWidget *create_menu_window(GtkApplication *app) {
-    GtkWidget *window = gtk_application_window_new(app);
+    GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(window), "Menu principal");
     gtk_window_set_default_size(GTK_WINDOW(window), 1280, 720);
 
@@ -59,7 +63,7 @@ GtkWidget *create_login_window(GtkApplication *app) {
     GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(window), "Interface de Connexion");
     gtk_window_set_default_size(GTK_WINDOW(window), 300, 200);
-    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), login_window);
 
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     gtk_container_add(GTK_CONTAINER(window), vbox);
@@ -72,7 +76,7 @@ GtkWidget *create_login_window(GtkApplication *app) {
     gtk_entry_set_visibility(GTK_ENTRY(password_entry), FALSE);
 
     GtkWidget *connect_button = gtk_button_new_with_label("Connexion");
-    g_signal_connect(connect_button, "clicked", G_CALLBACK(activate), app);
+    g_signal_connect(connect_button, "clicked", G_CALLBACK(activate_menu), NULL);
 
     gtk_box_pack_start(GTK_BOX(vbox), username_label, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), username_entry, FALSE, FALSE, 0);
@@ -83,27 +87,38 @@ GtkWidget *create_login_window(GtkApplication *app) {
     return window;
 }
 
+//Procédure se lançant au démarrage de l'application
+static void launch(GtkApplication *app, gpointer user_data) {
+    login_window = create_login_window(app);
+
+    gtk_widget_show_all(login_window);
+
+    gtk_main();
+}
+
 //Procédure censée se lancer lorsque l'utilisateur appuie sur connexion et ouvrant le menu
-static void activate(GtkApplication *app, gpointer user_data) {
+static void activate_menu(GtkApplication *app, gpointer user_data) {
     GtkWidget *menu_window = create_menu_window(app);
 
-    // Afficher tous les widgets de la fenêtre principale
     gtk_widget_show_all(menu_window);
 
+    // Fermer la fenêtre de connexion
+    if (login_window != NULL) {
+        gtk_widget_destroy(login_window);
+        login_window = NULL;  
+    }
+
+    gtk_main();
 }
 
 int main(int argc, char *argv[]) {
-       // Initialiser GTK
-    gtk_init(&argc, &argv);
-    GtkApplication *app = gtk_application_new("com.example.Gtk4Tabs", G_APPLICATION_DEFAULT_FLAGS);
+    int status;
+    GtkApplication *app = gtk_application_new("projet.c", G_APPLICATION_DEFAULT_FLAGS);
     // Créer la fenêtre de connexion en appelant la fonction
-    GtkWidget *login_window = create_menu_window(app);
+    g_signal_connect (app, "activate", G_CALLBACK (launch), NULL);
 
-    // Afficher tous les widgets
-    gtk_widget_show_all(login_window);
+    status = g_application_run (G_APPLICATION (app), argc, argv);
+    g_object_unref (app);
 
-    // Lancer la boucle principale GTK
-    gtk_main();
-
-    return 0;
+    return status;
 }
