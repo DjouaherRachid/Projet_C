@@ -6,14 +6,15 @@
 
 static void launch(GtkApplication *app, gpointer user_data);
 static void activate_menu(GtkApplication *app, gpointer user_data);
-static void on_tab_selected(GtkNotebook *notebook, GtkWidget *page, guint page_num, gpointer user_data);
+static void activate_Entreprise(GtkApplication *app, gpointer user_data);
+
 GtkWidget *create_menu_window(GtkApplication *app);
 GtkWidget *create_login_window(GtkApplication *app);
+GtkWidget *create_Entreprise_form(GtkApplication *app);
 GtkWidget *login_window = NULL;
+GtkWidget *menu_window = NULL;
 
 //Les procédures qui générent les sites
-
-
 void generateHTML(const char *filename, const char *name, const char *about, const char *contact) {
     FILE *file = fopen(filename, "w");
 
@@ -135,7 +136,65 @@ void generateHTML(const char *filename, const char *name, const char *about, con
     }
 }
 
+// Fonction de rappel pour le bouton "Enregistrer"
+void submit_settings(GtkWidget *button, gpointer user_data) {
+    // Ajoutez le code pour récupérer les valeurs des champs et les enregistrer
+    // ...
+    g_print("Paramètres enregistrés avec succès!\n");
+}
+//Fonction qui créée la fenêtre qui s'ouvre lorsque l'on appuie sur select Site d'Entreprise en tant que template
+GtkWidget *create_Entreprise_form(GtkApplication *app) {
+    GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_title(GTK_WINDOW(window), "Entreprise_Website");
+    gtk_window_set_default_size(GTK_WINDOW(window), 600, 400);
+    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
+    GtkWidget *grid = gtk_grid_new();
+    gtk_container_add(GTK_CONTAINER(window), grid);
+
+    const char *parameters[] = {
+        "Name", "About Us", "Contact",
+        "Body Color", "Body Font Family",
+        "Header BG Color", "Header Text Color",
+        "A Text Color", "Footer BG Color",
+        "Footer Text Color", "Hero BG Color"
+    };
+
+    for (int i = 0; i < G_N_ELEMENTS(parameters); i++) {
+        GtkWidget *label = gtk_label_new(parameters[i]);
+        GtkWidget *entry = gtk_entry_new();
+
+        // Ajuster la taille de la police pour les étiquettes et les entrées
+        PangoFontDescription *font_desc = pango_font_description_from_string("Sans Bold 14");
+        gtk_widget_override_font(label, font_desc);
+        gtk_widget_override_font(entry, font_desc);
+        pango_font_description_free(font_desc);
+
+        // Ajouter de l'espace vertical entre les widgets
+        int vertical_spacing = 10;
+        gtk_widget_set_margin_bottom(label, vertical_spacing);
+        gtk_widget_set_margin_bottom(entry, vertical_spacing);
+
+        // Ajouter les widgets au GtkGrid avec les ajustements de taille de police et d'espace vertical
+        gtk_grid_attach(GTK_GRID(grid), label, 0, i, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), entry, 1, i, 1, 1);
+    }
+
+    GtkWidget *submit_button = gtk_button_new_with_label("Enregistrer");
+    g_signal_connect(submit_button, "clicked", G_CALLBACK(submit_settings), NULL);
+
+    // Ajouter de l'espace vertical entre le dernier champ et le bouton
+    int vertical_spacing = 20;
+    gtk_widget_set_margin_bottom(submit_button, vertical_spacing);
+
+    // Ajouter le bouton au GtkGrid
+    gtk_grid_attach(GTK_GRID(grid), submit_button, 1, G_N_ELEMENTS(parameters), 1, 1);
+
+    gtk_widget_set_halign(grid, GTK_ALIGN_CENTER);
+    gtk_widget_set_valign(grid, GTK_ALIGN_CENTER);
+
+    return window;
+}
 
 GtkWidget *create_template_widget(const char *template_name) {
     GtkWidget *template_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -145,7 +204,10 @@ GtkWidget *create_template_widget(const char *template_name) {
     gtk_widget_override_font(label, font_desc);
 
     GtkWidget *button = gtk_button_new_with_label("Select");
-    //g_signal_connect(button, "clicked", G_CALLBACK(template_button_clicked), (gpointer)template_name);
+
+    //Cliquer sur le bouton ouvre le formulaire de personnalisation du site d'entreprise si on 
+    if (strcmp(template_name, "Site d'Entreprise") == 0) 
+    g_signal_connect(button, "clicked", G_CALLBACK(activate_Entreprise), NULL);
 
     gtk_box_pack_start(GTK_BOX(template_box), label, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(template_box), button, FALSE, FALSE, 0);
@@ -308,6 +370,21 @@ GtkWidget *create_login_window(GtkApplication *app) {
     return window;
 }
 
+static void activate_Entreprise(GtkApplication *app, gpointer user_data) {
+    GtkWidget *Entreprise_window = create_Entreprise_form(app);
+
+    gtk_widget_show_all(Entreprise_window);
+    g_signal_connect(Entreprise_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+    // Fermer la fenêtre du menu
+    if (menu_window != NULL) {
+        gtk_widget_destroy(menu_window);
+        menu_window = NULL;  
+    }
+
+    gtk_main();
+}
+
 //Procédure se lançant au démarrage de l'application
 static void launch(GtkApplication *app, gpointer user_data) {
     login_window = create_login_window(app);
@@ -316,12 +393,12 @@ static void launch(GtkApplication *app, gpointer user_data) {
 
     gtk_main();
 
-     g_signal_connect(login_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+    g_signal_connect(login_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 }
 
 //Procédure censée se lancer lorsque l'utilisateur appuie sur connexion et ouvrant le menu
 static void activate_menu(GtkApplication *app, gpointer user_data) {
-    GtkWidget *menu_window = create_menu_window(app);
+    menu_window = create_menu_window(app);
 
     gtk_widget_show_all(menu_window);
     g_signal_connect(menu_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
@@ -333,12 +410,11 @@ static void activate_menu(GtkApplication *app, gpointer user_data) {
     }
 
     gtk_main();
-     g_signal_connect(menu_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 }
 
 int main(int argc, char *argv[]) {
     int status;
-    /*
+
     GtkApplication *app = gtk_application_new("projet.c", G_APPLICATION_DEFAULT_FLAGS);
     // Créer la fenêtre de connexion en appelant la fonction
     g_signal_connect (app, "activate", G_CALLBACK (launch), NULL);
@@ -346,14 +422,14 @@ int main(int argc, char *argv[]) {
 
     status = g_application_run (G_APPLICATION (app), argc, argv);
     g_object_unref (app);
-    */
+    
 
     //On ouvre la BDD
         sqlite3 *db;
     char *errMsg = 0;
 
     // Ouvrir la base de données (elle sera créée si elle n'existe pas)
-    if (sqlite3_open("MaBaseDeDonnees.db", &db) == SQLITE_OK) {
+    if (sqlite3_open("DataBase.db", &db) == SQLITE_OK) {
         // Créer la table Entreprise_Website
         const char *createTableSQL = 
             "CREATE TABLE IF NOT EXISTS Entreprise_Website ("
@@ -378,15 +454,15 @@ int main(int argc, char *argv[]) {
         } else {
             printf("Table Entreprise_Website créée avec succès.\n");
 
-            // Ajouter un tuple à la table avec les valeurs correspondant au fichier HTML
-            const char *insertTupleSQL = 
+            // Ajouter un tuple à la table avec les valeurs correspondant au fichier HTML de template du site d'entreprise
+            const char *insertTemplateEntreprise = 
                 "INSERT INTO Entreprise_Website (name, about_us, contact, body_color, body_font_family, "
                 "header_bg_color, header_text_color, a_text_color, footer_bg_color, footer_text_color, hero_bg_color) "
                 "VALUES (\"Nom de l'Entreprise\", \"Une brève description de l'entreprise et de son histoire.\", "
                 "\"Adresse, numéro de téléphone, formulaire de contact, etc.\", '#f4f4f4', 'Arial, sans-serif', "
                 "'#333', '#fff', '#fff', '#333', '#fff', '#f4f4f4');";
 
-            if (sqlite3_exec(db, insertTupleSQL, 0, 0, &errMsg) != SQLITE_OK) {
+            if (sqlite3_exec(db, insertTemplateEntreprise, 0, 0, &errMsg) != SQLITE_OK) {
                 fprintf(stderr, "Erreur lors de l'insertion du tuple : %s\n", errMsg);
                 sqlite3_free(errMsg);
             } else {
@@ -399,8 +475,6 @@ int main(int argc, char *argv[]) {
     } else {
         fprintf(stderr, "Impossible d'ouvrir la base de données.\n");
     }
-
-    generateHTML("index.html", "ESGI", "Oui bonjourent", "contact");
 
     return 0;
 
