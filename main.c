@@ -11,12 +11,6 @@ GtkWidget *create_login_window(GtkApplication *app);
 GtkWidget *login_window = NULL;
 
 
-
-//Animation lorsque l'utilisateur change d'onglet dans le menu
-static void on_tab_selected(GtkNotebook *notebook, GtkWidget *page, guint page_num, gpointer user_data) {
-    gtk_stack_set_visible_child_name(GTK_STACK(user_data), gtk_notebook_get_tab_label_text(notebook, page));
-}
-
 //Menu principal
 GtkWidget *create_menu_window(GtkApplication *app) {
     GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -26,34 +20,64 @@ GtkWidget *create_menu_window(GtkApplication *app) {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_container_add(GTK_CONTAINER(window), box);
 
-    GtkWidget *stack = gtk_stack_new();
-    gtk_stack_set_transition_type(GTK_STACK(stack), GTK_STACK_TRANSITION_TYPE_SLIDE_LEFT_RIGHT);
-
     GtkWidget *notebook = gtk_notebook_new();
     gtk_notebook_set_tab_pos(GTK_NOTEBOOK(notebook), GTK_POS_LEFT);
-    g_signal_connect(notebook, "switch-page", G_CALLBACK(on_tab_selected), stack);
 
     const char *tab_labels[] = {"Create page from scratch", "Create page from template", "Load page"};
 
     for (int i = 0; i < G_N_ELEMENTS(tab_labels); i++) {
-        GtkWidget *page = gtk_label_new(g_strdup_printf("Contenu de l'onglet %d", i + 1));
+        GtkWidget *page = gtk_grid_new();
         GtkWidget *label = gtk_label_new(tab_labels[i]);
+
+        PangoFontDescription *tab_font_desc = pango_font_description_from_string("Sans 10");
+        gtk_widget_override_font(label, tab_font_desc);
+
         gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page, label);
+
+        // "Create page from scratch"
+        switch (i)
+        {
+        case 0:
+            GtkWidget *large_label = gtk_label_new("Create a page from scratch");
+            PangoFontDescription *large_font_desc = pango_font_description_from_string("Sans 24");
+            gtk_widget_override_font(large_label, large_font_desc);
+            gtk_grid_attach(GTK_GRID(page), large_label, 0, 0, 1, 1);
+
+            // Ajouter un bouton "Start"
+            GtkWidget *start_button = gtk_button_new_with_label("Start");
+            gtk_widget_set_size_request(start_button, 200, 100);
+            gtk_grid_attach(GTK_GRID(page), start_button, 0, 1, 1, 1);
+            gtk_widget_set_hexpand(start_button, TRUE);
+            gtk_widget_set_vexpand(start_button, TRUE);
+            gtk_widget_set_halign(start_button, GTK_ALIGN_CENTER);
+            gtk_widget_set_valign(start_button, GTK_ALIGN_CENTER);
+
+            // Connecter une fonction de rappel pour le bouton "Start" 
+            // g_signal_connect(start_button, "clicked", G_CALLBACK(start_button_clicked), NULL);
+        break;
+
+        case 1:
+            // Label "Create a page from template" centré
+            GtkWidget *template_label = gtk_label_new("Create a page from template");
+            PangoFontDescription *template_font_desc = pango_font_description_from_string("Sans 24");
+            gtk_widget_override_font(template_label, template_font_desc);
+            gtk_grid_attach(GTK_GRID(page), template_label, 0, 0, 1, 1);
+            gtk_widget_set_halign(template_label, GTK_ALIGN_CENTER);
+            gtk_widget_set_valign(template_label, GTK_ALIGN_CENTER);
+
+        break;
+        
+        default:
+            break;
+        }
     }
 
     GtkWidget *boxLeft = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_box_pack_start(GTK_BOX(boxLeft), notebook, TRUE, TRUE, 0);
-
-    GtkWidget *label1 = gtk_label_new("Contenu de l'onglet 1");
-    GtkWidget *label2 = gtk_label_new("Contenu de l'onglet 2");
-    GtkWidget *label3 = gtk_label_new("Contenu de l'onglet 3");
-
-    gtk_stack_add_named(GTK_STACK(stack), label1, "Create page from scratch");
-    gtk_stack_add_named(GTK_STACK(stack), label2, "Create page from template");
-    gtk_stack_add_named(GTK_STACK(stack), label3, "Load page");
-
     gtk_container_add(GTK_CONTAINER(box), boxLeft);
-    gtk_container_add(GTK_CONTAINER(box), stack);
+
+    // Afficher la fenêtre principale
+    gtk_widget_show_all(window);
 
     return window;
 }
@@ -111,7 +135,7 @@ GtkWidget *create_login_window(GtkApplication *app) {
 
 //Procédure se lançant au démarrage de l'application
 static void launch(GtkApplication *app, gpointer user_data) {
-    login_window = create_login_window(app);
+    login_window = create_menu_window(app);
 
     gtk_widget_show_all(login_window);
 
