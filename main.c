@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "sqlite/sqlite3.h"
 #include "sqlite/sqlite3.c"
 #include <gtk/gtk.h>
@@ -9,6 +10,131 @@ static void on_tab_selected(GtkNotebook *notebook, GtkWidget *page, guint page_n
 GtkWidget *create_menu_window(GtkApplication *app);
 GtkWidget *create_login_window(GtkApplication *app);
 GtkWidget *login_window = NULL;
+
+//Les procédures qui générent les sites
+
+
+void generateHTML(const char *filename, const char *name, const char *about, const char *contact) {
+    FILE *file = fopen(filename, "w");
+
+    if (file != NULL) {
+        fprintf(file, "<!DOCTYPE html>\n");
+        fprintf(file, "<html lang=\"en\">\n");
+        fprintf(file, "<head>\n");
+        fprintf(file, "<meta charset=\"UTF-8\">\n");
+        fprintf(file, "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n");
+        fprintf(file, "<title>%s</title>\n", name);
+        fprintf(file, "<style>\n");
+        fprintf(file, "body {\n");
+        fprintf(file, "    font-family: Arial, sans-serif;\n");
+        fprintf(file, "    margin: 0;\n");
+        fprintf(file, "    padding: 0;\n");
+        fprintf(file, "    box-sizing: border-box;\n");
+        fprintf(file, "}\n");
+
+        fprintf(file, "header {\n");
+        fprintf(file, "    background-color: #333;\n");
+        fprintf(file, "    color: #fff;\n");
+        fprintf(file, "    padding: 10px;\n");
+        fprintf(file, "    text-align: center;\n");
+        fprintf(file, "}\n");
+
+        fprintf(file, "nav ul {\n");
+        fprintf(file, "    list-style: none;\n");
+        fprintf(file, "    margin: 0;\n");
+        fprintf(file, "    padding: 0;\n");
+        fprintf(file, "}\n");
+
+        fprintf(file, "nav li {\n");
+        fprintf(file, "    display: inline;\n");
+        fprintf(file, "    margin-right: 20px;\n");
+        fprintf(file, "}\n");
+
+        fprintf(file, "a {\n");
+        fprintf(file, "    text-decoration: none;\n");
+        fprintf(file, "    color: #fff;\n");
+        fprintf(file, "}\n");
+
+        fprintf(file, "#hero {\n");
+        fprintf(file, "    background-color: #f4f4f4;\n");
+        fprintf(file, "    padding: 50px;\n");
+        fprintf(file, "    text-align: center;\n");
+        fprintf(file, "}\n");
+
+        fprintf(file, "#services, #about, #contact {\n");
+        fprintf(file, "    padding: 50px;\n");
+        fprintf(file, "}\n");
+
+        fprintf(file, ".service {\n");
+        fprintf(file, "    margin-bottom: 20px;\n");
+        fprintf(file, "}\n");
+
+        fprintf(file, "footer {\n");
+        fprintf(file, "    background-color: #333;\n");
+        fprintf(file, "    color: #fff;\n");
+        fprintf(file, "    text-align: center;\n");
+        fprintf(file, "    padding: 10px;\n");
+        fprintf(file, "    position: fixed;\n");
+        fprintf(file, "    bottom: 0;\n");
+        fprintf(file, "    width: 100%;\n");
+        fprintf(file, "}\n");
+
+        fprintf(file, "</style>\n");
+        fprintf(file, "</head>\n");
+        fprintf(file, "<body>\n");
+
+        fprintf(file, "<header>\n");
+        fprintf(file, "    <h1>%s</h1>\n", name);
+        fprintf(file, "    <nav>\n");
+        fprintf(file, "        <ul>\n");
+        fprintf(file, "            <li><a href=\"#services\">Nos Services</a></li>\n");
+        fprintf(file, "            <li><a href=\"#about\">À Propos</a></li>\n");
+        fprintf(file, "            <li><a href=\"#contact\">Contact</a></li>\n");
+        fprintf(file, "        </ul>\n");
+        fprintf(file, "    </nav>\n");
+        fprintf(file, "</header>\n");
+
+        fprintf(file, "<section id=\"hero\">\n");
+        fprintf(file, "    <h2>Bienvenue chez Nous</h2>\n");
+        fprintf(file, "    <p>%s</p>\n", about);
+        fprintf(file, "</section>\n");
+
+        fprintf(file, "<section id=\"services\">\n");
+        fprintf(file, "    <h2>Nos Services</h2>\n");
+        fprintf(file, "    <div class=\"service\">\n");
+        fprintf(file, "        <h3>Service 1</h3>\n");
+        fprintf(file, "        <p>Description du service 1.</p>\n");
+        fprintf(file, "    </div>\n");
+        fprintf(file, "    <div class=\"service\">\n");
+        fprintf(file, "        <h3>Service 2</h3>\n");
+        fprintf(file, "        <p>Description du service 2.</p>\n");
+        fprintf(file, "    </div>\n");
+        fprintf(file, "</section>\n");
+
+        fprintf(file, "<section id=\"about\">\n");
+        fprintf(file, "    <h2>À Propos de Nous</h2>\n");
+        fprintf(file, "    <p>%s</p>\n", about);
+        fprintf(file, "</section>\n");
+
+        fprintf(file, "<section id=\"contact\">\n");
+        fprintf(file, "    <h2>Contactez-nous</h2>\n");
+        fprintf(file, "    <p>%s</p>\n", contact);
+        fprintf(file, "</section>\n");
+
+        fprintf(file, "<footer>\n");
+        fprintf(file, "    <p>&copy; 2024 %s. Tous droits réservés.</p>\n", name);
+        fprintf(file, "</footer>\n");
+
+        fprintf(file, "</body>\n");
+        fprintf(file, "</html>\n");
+
+        fclose(file);
+        printf("Fichier HTML généré avec succès : %s\n", filename);
+    } else {
+        fprintf(stderr, "Erreur lors de l'ouverture du fichier HTML de sortie.\n");
+    }
+}
+
 
 
 GtkWidget *create_template_widget(const char *template_name) {
@@ -100,7 +226,7 @@ GtkWidget *create_menu_window(GtkApplication *app) {
                 gtk_grid_set_row_homogeneous(GTK_GRID(templates_box), TRUE);
 
                 // Tableau de noms de templates
-                const char *template_names[] = {"Template 1", "Template 2", "Template 3", "Template 4", "Template 5"};
+                const char *template_names[] = {"Site d'Entreprise", "Blog Personnel ", "Site d'e-commerce", "Site d'Agence de Voyage", "Template de CV en Ligne"};
 
                 // Ajouter les widgets de templates au conteneur avec une boucle
                 for (int j = 0; j < G_N_ELEMENTS(template_names); j++) {
@@ -131,8 +257,6 @@ GtkWidget *create_menu_window(GtkApplication *app) {
 
     return window;
 }
-
-
 
 //Fenêtre de connexion
 GtkWidget *create_login_window(GtkApplication *app) {
@@ -184,7 +308,6 @@ GtkWidget *create_login_window(GtkApplication *app) {
     return window;
 }
 
-
 //Procédure se lançant au démarrage de l'application
 static void launch(GtkApplication *app, gpointer user_data) {
     login_window = create_login_window(app);
@@ -215,6 +338,7 @@ static void activate_menu(GtkApplication *app, gpointer user_data) {
 
 int main(int argc, char *argv[]) {
     int status;
+    /*
     GtkApplication *app = gtk_application_new("projet.c", G_APPLICATION_DEFAULT_FLAGS);
     // Créer la fenêtre de connexion en appelant la fonction
     g_signal_connect (app, "activate", G_CALLBACK (launch), NULL);
@@ -222,9 +346,63 @@ int main(int argc, char *argv[]) {
 
     status = g_application_run (G_APPLICATION (app), argc, argv);
     g_object_unref (app);
+    */
 
     //On ouvre la BDD
-    
+        sqlite3 *db;
+    char *errMsg = 0;
+
+    // Ouvrir la base de données (elle sera créée si elle n'existe pas)
+    if (sqlite3_open("MaBaseDeDonnees.db", &db) == SQLITE_OK) {
+        // Créer la table Entreprise_Website
+        const char *createTableSQL = 
+            "CREATE TABLE IF NOT EXISTS Entreprise_Website ("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+            "name TEXT,"
+            "about_us TEXT,"
+            "contact TEXT,"
+            "body_color TEXT,"
+            "body_font_family TEXT,"
+            "header_bg_color TEXT,"
+            "header_text_color TEXT,"
+            "a_text_color TEXT,"
+            "footer_bg_color TEXT,"
+            "footer_text_color TEXT,"
+            "hero_bg_color TEXT"
+            ");";
+
+
+        if (sqlite3_exec(db, createTableSQL, 0, 0, &errMsg) != SQLITE_OK) {
+            fprintf(stderr, "Erreur lors de la création de la table : %s\n", errMsg);
+            sqlite3_free(errMsg);
+        } else {
+            printf("Table Entreprise_Website créée avec succès.\n");
+
+            // Ajouter un tuple à la table avec les valeurs correspondant au fichier HTML
+            const char *insertTupleSQL = 
+                "INSERT INTO Entreprise_Website (name, about_us, contact, body_color, body_font_family, "
+                "header_bg_color, header_text_color, a_text_color, footer_bg_color, footer_text_color, hero_bg_color) "
+                "VALUES (\"Nom de l'Entreprise\", \"Une brève description de l'entreprise et de son histoire.\", "
+                "\"Adresse, numéro de téléphone, formulaire de contact, etc.\", '#f4f4f4', 'Arial, sans-serif', "
+                "'#333', '#fff', '#fff', '#333', '#fff', '#f4f4f4');";
+
+            if (sqlite3_exec(db, insertTupleSQL, 0, 0, &errMsg) != SQLITE_OK) {
+                fprintf(stderr, "Erreur lors de l'insertion du tuple : %s\n", errMsg);
+                sqlite3_free(errMsg);
+            } else {
+                printf("Tuple ajouté avec succès.\n");
+            }
+        }
+
+        // Fermer la base de données
+        sqlite3_close(db);
+    } else {
+        fprintf(stderr, "Impossible d'ouvrir la base de données.\n");
+    }
+
+    generateHTML("index.html", "ESGI", "Oui bonjourent", "contact");
+
+    return 0;
 
     return status;
 }
