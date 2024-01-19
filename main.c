@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "sqlite/sqlite3.h"
 #include "sqlite/sqlite3.c"
 #include <gtk/gtk.h>
 
+//Prototypes des procédures lançant les différentes fenêtres du projet
 static void launch(GtkApplication *app, gpointer user_data);
 static void activate_menu(GtkApplication *app, gpointer user_data);
 static void activate_Entreprise(GtkApplication *app, gpointer user_data);
@@ -11,12 +13,21 @@ static void activate_Entreprise(GtkApplication *app, gpointer user_data);
 GtkWidget *create_menu_window(GtkApplication *app);
 GtkWidget *create_login_window(GtkApplication *app);
 GtkWidget *create_Entreprise_form(GtkApplication *app);
+
 GtkWidget *login_window = NULL;
 GtkWidget *menu_window = NULL;
+GtkWidget *Entreprise_form= NULL;
+
+sqlite3 *db;
 
 //Les procédures qui générent les sites
-void generateHTML(const char *filename, const char *name, const char *about, const char *contact) {
-    FILE *file = fopen(filename, "w");
+void generate_Entreprise_Website(const char *name, const char *about, const char *slogan, const char *contact,
+                  const char *body_color, const char *body_font_family,
+                  const char *header_bg_color, const char *header_text_color,
+                  const char *a_text_color, const char *footer_bg_color,
+                  const char *footer_text_color, const char *hero_bg_color) {
+
+    FILE *file = fopen("Bonjourent.html", "w");
 
     if (file != NULL) {
         fprintf(file, "<!DOCTYPE html>\n");
@@ -27,15 +38,16 @@ void generateHTML(const char *filename, const char *name, const char *about, con
         fprintf(file, "<title>%s</title>\n", name);
         fprintf(file, "<style>\n");
         fprintf(file, "body {\n");
-        fprintf(file, "    font-family: Arial, sans-serif;\n");
+        fprintf(file, "    font-family: %s;\n", body_font_family);
         fprintf(file, "    margin: 0;\n");
         fprintf(file, "    padding: 0;\n");
         fprintf(file, "    box-sizing: border-box;\n");
+        fprintf(file, "    color: %s;\n", body_color);
         fprintf(file, "}\n");
 
         fprintf(file, "header {\n");
-        fprintf(file, "    background-color: #333;\n");
-        fprintf(file, "    color: #fff;\n");
+        fprintf(file, "    background-color: %s;\n", header_bg_color);
+        fprintf(file, "    color: %s;\n", header_text_color);
         fprintf(file, "    padding: 10px;\n");
         fprintf(file, "    text-align: center;\n");
         fprintf(file, "}\n");
@@ -53,11 +65,11 @@ void generateHTML(const char *filename, const char *name, const char *about, con
 
         fprintf(file, "a {\n");
         fprintf(file, "    text-decoration: none;\n");
-        fprintf(file, "    color: #fff;\n");
+        fprintf(file, "    color: %s;\n", a_text_color);
         fprintf(file, "}\n");
 
         fprintf(file, "#hero {\n");
-        fprintf(file, "    background-color: #f4f4f4;\n");
+        fprintf(file, "    background-color: %s;\n", hero_bg_color);
         fprintf(file, "    padding: 50px;\n");
         fprintf(file, "    text-align: center;\n");
         fprintf(file, "}\n");
@@ -71,8 +83,8 @@ void generateHTML(const char *filename, const char *name, const char *about, con
         fprintf(file, "}\n");
 
         fprintf(file, "footer {\n");
-        fprintf(file, "    background-color: #333;\n");
-        fprintf(file, "    color: #fff;\n");
+        fprintf(file, "    background-color: %s;\n", footer_bg_color);
+        fprintf(file, "    color: %s;\n", footer_text_color);
         fprintf(file, "    text-align: center;\n");
         fprintf(file, "    padding: 10px;\n");
         fprintf(file, "    position: fixed;\n");
@@ -96,8 +108,7 @@ void generateHTML(const char *filename, const char *name, const char *about, con
         fprintf(file, "</header>\n");
 
         fprintf(file, "<section id=\"hero\">\n");
-        fprintf(file, "    <h2>Bienvenue chez Nous</h2>\n");
-        fprintf(file, "    <p>%s</p>\n", about);
+        fprintf(file, "    <h2>%s</h2>\n",slogan);
         fprintf(file, "</section>\n");
 
         fprintf(file, "<section id=\"services\">\n");
@@ -130,39 +141,44 @@ void generateHTML(const char *filename, const char *name, const char *about, con
         fprintf(file, "</html>\n");
 
         fclose(file);
-        printf("Fichier HTML généré avec succès : %s\n", filename);
+        printf("Fichier HTML généré avec succès : %s\n", "Bonjourent.html");
     } else {
         fprintf(stderr, "Erreur lors de l'ouverture du fichier HTML de sortie.\n");
     }
+}   
+
+save_entreprise_website(){
+
 }
 
-// Fonction de rappel pour le bouton "Enregistrer"
-void submit_settings(GtkWidget *button, gpointer user_data) {
-    // Ajoutez le code pour récupérer les valeurs des champs et les enregistrer
-    // ...
-    g_print("Paramètres enregistrés avec succès!\n");
-}
-//Fonction qui créée la fenêtre qui s'ouvre lorsque l'on appuie sur select Site d'Entreprise en tant que template
+//Fonction qui créée le formulaire de personnalisation du template de site d'entreprise
 GtkWidget *create_Entreprise_form(GtkApplication *app) {
     GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(window), "Entreprise_Website");
-    gtk_window_set_default_size(GTK_WINDOW(window), 600, 400);
+    gtk_window_set_default_size(GTK_WINDOW(window), 1280, 720);
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
     GtkWidget *grid = gtk_grid_new();
     gtk_container_add(GTK_CONTAINER(window), grid);
 
     const char *parameters[] = {
-        "Name", "About Us", "Contact",
+        "Name", "About Us", "Slogan", "Contact",
         "Body Color", "Body Font Family",
         "Header BG Color", "Header Text Color",
         "A Text Color", "Footer BG Color",
         "Footer Text Color", "Hero BG Color"
     };
 
+    const char *default_texts[] = {
+        "Nom de l'Entreprise","Une brève description de l'entreprise et de son histoire", 
+        "Adresse, numéro de téléphone, formulaire de contact, etc.", "#f4f4f4", "Arial, sans-serif", 
+        "#333", "#fff", "#fff", "#333", "#fff", "#f4f4f4"
+    };
+
     for (int i = 0; i < G_N_ELEMENTS(parameters); i++) {
         GtkWidget *label = gtk_label_new(parameters[i]);
         GtkWidget *entry = gtk_entry_new();
+        gtk_entry_set_text(GTK_ENTRY(entry), default_texts[i]);
 
         // Ajuster la taille de la police pour les étiquettes et les entrées
         PangoFontDescription *font_desc = pango_font_description_from_string("Sans Bold 14");
@@ -175,17 +191,23 @@ GtkWidget *create_Entreprise_form(GtkApplication *app) {
         gtk_widget_set_margin_bottom(label, vertical_spacing);
         gtk_widget_set_margin_bottom(entry, vertical_spacing);
 
+        // Multiplier par 3 la largeur des GtkEntry
+        gtk_widget_set_size_request(entry, 3 * gtk_widget_get_allocated_width(entry), -1);
+
         // Ajouter les widgets au GtkGrid avec les ajustements de taille de police et d'espace vertical
         gtk_grid_attach(GTK_GRID(grid), label, 0, i, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), entry, 1, i, 1, 1);
     }
 
     GtkWidget *submit_button = gtk_button_new_with_label("Enregistrer");
-    g_signal_connect(submit_button, "clicked", G_CALLBACK(submit_settings), NULL);
+    g_signal_connect(submit_button, "clicked", G_CALLBACK(save_entreprise_website), NULL);
 
     // Ajouter de l'espace vertical entre le dernier champ et le bouton
     int vertical_spacing = 20;
     gtk_widget_set_margin_bottom(submit_button, vertical_spacing);
+
+    // Multiplier par 2 la largeur du bouton
+    gtk_widget_set_size_request(submit_button, 2 * gtk_widget_get_allocated_width(submit_button), -1);
 
     // Ajouter le bouton au GtkGrid
     gtk_grid_attach(GTK_GRID(grid), submit_button, 1, G_N_ELEMENTS(parameters), 1, 1);
@@ -414,18 +436,16 @@ static void activate_menu(GtkApplication *app, gpointer user_data) {
 
 int main(int argc, char *argv[]) {
     int status;
-
+    int rc = sqlite3_open("DataBase.db", &db);
+    
     GtkApplication *app = gtk_application_new("projet.c", G_APPLICATION_DEFAULT_FLAGS);
     // Créer la fenêtre de connexion en appelant la fonction
     g_signal_connect (app, "activate", G_CALLBACK (launch), NULL);
-    g_signal_connect(app, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
     status = g_application_run (G_APPLICATION (app), argc, argv);
     g_object_unref (app);
     
-
     //On ouvre la BDD
-        sqlite3 *db;
     char *errMsg = 0;
 
     // Ouvrir la base de données (elle sera créée si elle n'existe pas)
@@ -475,6 +495,13 @@ int main(int argc, char *argv[]) {
     } else {
         fprintf(stderr, "Impossible d'ouvrir la base de données.\n");
     }
+
+    
+    //test pour voir si les générations de site fonctionnent
+    generate_Entreprise_Website("ESGI", "Bonjourent oui", "Ceci est un slogan","0836656565",
+                 "#bbbbbb", "Arial, sans-serif", "#333", "#fff", "#fff", "#333", "#fff", "#f4f4f4");
+
+    sqlite3_close(db);
 
     return 0;
 
