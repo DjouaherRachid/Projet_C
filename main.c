@@ -188,6 +188,7 @@ void save_entreprise_website(GtkWidget *button, GtkWidget **entries) {
         if (result != SQLITE_OK) {
             fprintf(stderr, "Erreur lors de l'insertion dans la table : %s\n", sqlite3_errmsg(db));
         } else {
+            show_message_dialog("Entreprise ajoutée à la BDD");
             printf("Entreprise ajoutée avec succès.\n");
             // Ajout d'un message de débogage supplémentaire
             printf("Après l'insertion.\n");
