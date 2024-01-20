@@ -508,7 +508,6 @@ int main(int argc, char *argv[]) {
 
     // Ouvrir la base de données (elle sera créée si elle n'existe pas)
     if (sqlite3_open("DataBase.db", &db) == SQLITE_OK) {
-        // Créer la table Entreprise_Website
         const char *createTableSQL =
             "CREATE TABLE IF NOT EXISTS Entreprise_Website ("
             "id INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -516,6 +515,10 @@ int main(int argc, char *argv[]) {
             "about_us TEXT,"
             "slogan TEXT,"
             "contact TEXT,"
+            "service1_name,"
+            "service1_description," 
+            "service2_name,"
+            "service2_description," 
             "body_color TEXT,"
             "body_font_family TEXT,"
             "header_bg_color TEXT,"
@@ -534,13 +537,15 @@ int main(int argc, char *argv[]) {
 
         // Ajouter le template à la table uniquement si elle est vide (et que le template n'existe donc pas déjà)
         const char *insertTemplateEntreprise =
-            "INSERT INTO Entreprise_Website (name, about_us, slogan, contact, body_color, body_font_family, "
-            "header_bg_color, header_text_color, a_text_color, footer_bg_color, footer_text_color, hero_bg_color) "
-            "SELECT 'Nom de l''Entreprise', 'Une brève description de l''entreprise et de son histoire.', 'Un slogan pour l''entreprise', "
-            "'Adresse, numéro de téléphone, formulaire de contact, etc.', '#f4f4f4', 'Arial, sans-serif', "
-            "'#333', '#fff', '#fff', '#333', '#fff', '#f4f4f4' "
-            "WHERE NOT EXISTS (SELECT 1 FROM Entreprise_Website LIMIT 1);";
-
+            "INSERT INTO Entreprise_Website (name, about_us, slogan, contact, "
+            "service1_name, service1_description, service2_name, service2_description, "
+            "body_color, body_font_family, header_bg_color, header_text_color, "
+            "a_text_color, footer_bg_color, footer_text_color, hero_bg_color) "
+            "SELECT 'Nom de l''Entreprise', 'Une brève description de l''entreprise et de son histoire', "
+            "'Un slogan pour l''entreprise', 'Adresse, numéro de téléphone, formulaire de contact, etc.', "
+            "'Service 1', 'Description du service 1', 'Service 2', 'Description du service 2', "
+            "'#f4f4f4', 'Arial, sans-serif', '#333', '#fff', '#fff', '#333', '#fff', '#f4f4f4' "
+            "WHERE NOT EXISTS (SELECT 1 FROM Entreprise_Website LIMIT 1)";
 
             if (sqlite3_exec(db, insertTemplateEntreprise, 0, 0, &errMsg) != SQLITE_OK) {
                 fprintf(stderr, "Erreur lors de l'insertion du tuple : %s\n", errMsg);
