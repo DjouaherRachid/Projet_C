@@ -141,7 +141,7 @@ void generate_Entreprise_Website(const char *name, const char *about, const char
         fprintf(file, "</html>\n");
 
         fclose(file);
-        printf("Fichier HTML généré avec succès : %s\n", "Bonjourent.html");
+        printf("Fichier HTML généré avec succès : %s\n", "Generated.html");
     } else {
         fprintf(stderr, "Erreur lors de l'ouverture du fichier HTML de sortie.\n");
     }
@@ -155,11 +155,18 @@ void save_entreprise_website(GtkWidget *button, GtkWidget **entries) {
         if (GTK_IS_ENTRY(entries[i])) {
             const gchar *entry_text = gtk_entry_get_text(GTK_ENTRY(entries[i]));
             values[i] = entry_text;
-            g_print("Entry %d Text: %s \n", i, entry_text);
+            g_print("Entry %d Text: %s \n", i, values[i]);
         } else {
             g_print("L'élément %d n'est pas un GtkEntry\n", i);
         }
     }
+
+    generate_Entreprise_Website(values[0], values[1], values[2], values[3],
+                  values[4],values[5], values[6],
+                  values[7],values[8],
+                  values[9], values[10],
+                  values[11]);
+
 }
 
 
