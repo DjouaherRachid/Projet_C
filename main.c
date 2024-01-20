@@ -22,6 +22,8 @@ sqlite3 *db;
 
 //Les procédures qui générent les sites
 void generate_Entreprise_Website(const char *name, const char *about, const char *slogan, const char *contact,
+                  const char *service1_name, const char *service1_description,
+                  const char *service2_name, const char *service2_description,
                   const char *body_color, const char *body_font_family,
                   const char *header_bg_color, const char *header_text_color,
                   const char *a_text_color, const char *footer_bg_color,
@@ -89,7 +91,7 @@ void generate_Entreprise_Website(const char *name, const char *about, const char
         fprintf(file, "    padding: 10px;\n");
         fprintf(file, "    position: fixed;\n");
         fprintf(file, "    bottom: 0;\n");
-        fprintf(file, "    width: 100%;\n");
+        fprintf(file, "    width: 100%%;\n");
         fprintf(file, "}\n");
 
         fprintf(file, "</style>\n");
@@ -114,12 +116,12 @@ void generate_Entreprise_Website(const char *name, const char *about, const char
         fprintf(file, "<section id=\"services\">\n");
         fprintf(file, "    <h2>Nos Services</h2>\n");
         fprintf(file, "    <div class=\"service\">\n");
-        fprintf(file, "        <h3>Service 1</h3>\n");
-        fprintf(file, "        <p>Description du service 1.</p>\n");
+        fprintf(file, "        <h3>%s</h3>\n", service1_name);
+        fprintf(file, "        <p>%s</p>\n", service1_description);
         fprintf(file, "    </div>\n");
         fprintf(file, "    <div class=\"service\">\n");
-        fprintf(file, "        <h3>Service 2</h3>\n");
-        fprintf(file, "        <p>Description du service 2.</p>\n");
+        fprintf(file, "        <h3>%s</h3>\n", service2_name);
+        fprintf(file, "        <p>%s</p>\n", service2_description);
         fprintf(file, "    </div>\n");
         fprintf(file, "</section>\n");
 
@@ -145,12 +147,13 @@ void generate_Entreprise_Website(const char *name, const char *about, const char
     } else {
         fprintf(stderr, "Erreur lors de l'ouverture du fichier HTML de sortie.\n");
     }
-}   
+}
+
 
 void save_entreprise_website(GtkWidget *button, GtkWidget **entries) {
-    const char *values[12];
+    const char *values[16];
 
-    for (int i = 0; i < 12; i++) {
+    for (int i = 0; i < 16; i++) {
         if (GTK_IS_ENTRY(entries[i])) {
             const gchar *entry_text = gtk_entry_get_text(GTK_ENTRY(entries[i]));
             values[i] = entry_text;
@@ -161,24 +164,24 @@ void save_entreprise_website(GtkWidget *button, GtkWidget **entries) {
     }
     free(entries);
 
-    //Génération du code html/css:
-    generate_Entreprise_Website(values[0], values[1], values[2], values[3],values[4],values[5], values[6],values[7],values[8],values[9], values[10],values[11]);
+    // Génération du code html/css:
+    generate_Entreprise_Website(values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7],
+                                values[8], values[9], values[10], values[11], values[12], values[13], values[14], values[15]);
 
-    const char *selectSQL = "SELECT * FROM Entreprise_Website";
-    sqlite3_exec(db, selectSQL, 0, 0, 0);
-
-    // Ajouter les valeurs à la table Entreprise_Website
-    // Construction de la requête avec sqlite3_mprintf
+    // Ouvrir la base de données
+    sqlite3 *db;
     if (sqlite3_open("DataBase.db", &db) == SQLITE_OK) {
         printf("BDD ouverte correctement \n");
 
+        // Construction de la requête avec sqlite3_mprintf
         const char *insertQuery = sqlite3_mprintf(
             "INSERT INTO Entreprise_Website (name, about_us, slogan, contact, "
+            "service1_name, service1_description, service2_name, service2_description, "
             "body_color, body_font_family, header_bg_color, header_text_color, "
             "a_text_color, footer_bg_color, footer_text_color, hero_bg_color) "
-            "VALUES ('%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q');",
-            values[0], values[1], values[2], values[3], values[4], values[5],
-            values[6], values[7], values[8], values[9], values[10], values[11]);
+            "VALUES ('%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q');",
+            values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7],
+            values[8], values[9], values[10], values[11], values[12], values[13], values[14], values[15]);
 
         // Exécuter la requête préparée
         int result = sqlite3_exec(db, insertQuery, 0, 0, 0);
@@ -190,16 +193,12 @@ void save_entreprise_website(GtkWidget *button, GtkWidget **entries) {
             printf("Après l'insertion.\n");
         }
 
-        // Fermez la base de données
+        // Fermer la base de données
         sqlite3_close(db);
     } else {
         fprintf(stderr, "Impossible d'ouvrir la base de données.\n");
     }
 }
-
-
-
-
 
 //Fonction qui créée le formulaire de personnalisation du template de site d'entreprise
 GtkWidget *create_Entreprise_form(GtkApplication *app) {
@@ -221,6 +220,8 @@ GtkWidget *create_Entreprise_form(GtkApplication *app) {
 
     const char *parameters[] = {
         "Name", "About Us", "Slogan", "Contact",
+        "Service 1 Name", "Service 1 Description",
+        "Service 2 Name", "Service 2 Description",
         "Body Color", "Body Font Family",
         "Header BG Color", "Header Text Color",
         "A Text Color", "Footer BG Color",
@@ -232,6 +233,8 @@ GtkWidget *create_Entreprise_form(GtkApplication *app) {
 
     const char *default_texts[] = {
         "Nom de l'Entreprise","Une brève description de l'entreprise et de son histoire", "Un slogan pour l'entreprise","Adresse, numéro de téléphone, formulaire de contact, etc.",
+        "Service 1", "Description du service 1",
+        "Service 2", "Description du service 2",
         "#000000 ", "Arial, sans-serif", 
         "#333", "#fff", "#fff", "#333", "#fff", "#f4f4f4"
     };
