@@ -147,7 +147,6 @@ void generate_Entreprise_Website(const char *name, const char *about, const char
     }
 }   
 
-// Fonction callback pour le bouton "Enregistrer"
 void save_entreprise_website(GtkWidget *button, GtkWidget **entries) {
     const char *values[12];
 
@@ -160,14 +159,46 @@ void save_entreprise_website(GtkWidget *button, GtkWidget **entries) {
             g_print("L'élément %d n'est pas un GtkEntry\n", i);
         }
     }
+    free(entries);
 
-    generate_Entreprise_Website(values[0], values[1], values[2], values[3],
-                  values[4],values[5], values[6],
-                  values[7],values[8],
-                  values[9], values[10],
-                  values[11]);
+    //Génération du code html/css:
+    generate_Entreprise_Website(values[0], values[1], values[2], values[3],values[4],values[5], values[6],values[7],values[8],values[9], values[10],values[11]);
 
+    const char *selectSQL = "SELECT * FROM Entreprise_Website";
+    sqlite3_exec(db, selectSQL, 0, 0, 0);
+
+    // Ajouter les valeurs à la table Entreprise_Website
+    // Construction de la requête avec sqlite3_mprintf
+    if (sqlite3_open("DataBase.db", &db) == SQLITE_OK) {
+        printf("BDD ouverte correctement \n");
+
+        const char *insertQuery = sqlite3_mprintf(
+            "INSERT INTO Entreprise_Website (name, about_us, slogan, contact, "
+            "body_color, body_font_family, header_bg_color, header_text_color, "
+            "a_text_color, footer_bg_color, footer_text_color, hero_bg_color) "
+            "VALUES ('%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q');",
+            values[0], values[1], values[2], values[3], values[4], values[5],
+            values[6], values[7], values[8], values[9], values[10], values[11]);
+
+        // Exécuter la requête préparée
+        int result = sqlite3_exec(db, insertQuery, 0, 0, 0);
+        if (result != SQLITE_OK) {
+            fprintf(stderr, "Erreur lors de l'insertion dans la table : %s\n", sqlite3_errmsg(db));
+        } else {
+            printf("Entreprise ajoutée avec succès.\n");
+            // Ajout d'un message de débogage supplémentaire
+            printf("Après l'insertion.\n");
+        }
+
+        // Fermez la base de données
+        sqlite3_close(db);
+    } else {
+        fprintf(stderr, "Impossible d'ouvrir la base de données.\n");
+    }
 }
+
+
+
 
 
 //Fonction qui créée le formulaire de personnalisation du template de site d'entreprise
@@ -179,6 +210,14 @@ GtkWidget *create_Entreprise_form(GtkApplication *app) {
 
     GtkWidget *grid = gtk_grid_new();
     gtk_container_add(GTK_CONTAINER(window), grid);
+
+    // Ajouter le libellé du titre
+    GtkWidget *titleLabel = gtk_label_new("Create your own entreprise website");
+    PangoFontDescription *titleFontDesc = pango_font_description_from_string("Sans Bold 18");
+    gtk_widget_override_font(titleLabel, titleFontDesc);
+    gtk_widget_set_halign(titleLabel, GTK_ALIGN_CENTER);
+    gtk_grid_attach(GTK_GRID(grid), titleLabel, 0, 0, 2, 1);
+    pango_font_description_free(titleFontDesc);
 
     const char *parameters[] = {
         "Name", "About Us", "Slogan", "Contact",
@@ -192,8 +231,8 @@ GtkWidget *create_Entreprise_form(GtkApplication *app) {
     GtkWidget **entries = malloc(G_N_ELEMENTS(parameters) * sizeof(GtkWidget *));
 
     const char *default_texts[] = {
-        "Nom de l'Entreprise","Une brève description de l'entreprise et de son histoire", "Un slogan pour l'entreprise",
-        "Adresse, numéro de téléphone, formulaire de contact, etc.", "#f4f4f4", "Arial, sans-serif", 
+        "Nom de l'Entreprise","Une brève description de l'entreprise et de son histoire", "Un slogan pour l'entreprise","Adresse, numéro de téléphone, formulaire de contact, etc.",
+        "#000000 ", "Arial, sans-serif", 
         "#333", "#fff", "#fff", "#333", "#fff", "#f4f4f4"
     };
 
@@ -215,25 +254,26 @@ GtkWidget *create_Entreprise_form(GtkApplication *app) {
         gtk_widget_set_size_request(entry, 3 * gtk_widget_get_allocated_width(entry), -1);
 
         // Ajouter les widgets au GtkGrid avec les ajustements de taille de police et d'espace vertical
-        gtk_grid_attach(GTK_GRID(grid), label, 0, i, 1, 1);
-        gtk_grid_attach(GTK_GRID(grid), entry, 1, i, 1, 1);
+        gtk_grid_attach(GTK_GRID(grid), label, 0, i + 1, 1, 1); // Incrémenter i de 1 pour laisser de l'espace pour le titre
+        gtk_grid_attach(GTK_GRID(grid), entry, 1, i + 1, 1, 1);
 
         // Stocker les entrées dans le tableau entries
         entries[i] = entry;
     }
 
+    // Ajouter le bouton "Enregistrer" à la fin
     GtkWidget *submit_button = gtk_button_new_with_label("Enregistrer");
     g_signal_connect(submit_button, "clicked", G_CALLBACK(save_entreprise_website), entries);
 
     // Ajouter de l'espace vertical entre le dernier champ et le bouton
-    int vertical_spacing = 20;
-    gtk_widget_set_margin_bottom(submit_button, vertical_spacing);
+    int vertical_spacing_button = 20;
+    gtk_widget_set_margin_bottom(submit_button, vertical_spacing_button);
 
     // Multiplier par 2 la largeur du bouton
     gtk_widget_set_size_request(submit_button, 2 * gtk_widget_get_allocated_width(submit_button), -1);
 
     // Ajouter le bouton au GtkGrid
-    gtk_grid_attach(GTK_GRID(grid), submit_button, 1, G_N_ELEMENTS(parameters), 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), submit_button, 0, G_N_ELEMENTS(parameters) + 1, 2, 1);
 
     gtk_widget_set_halign(grid, GTK_ALIGN_CENTER);
     gtk_widget_set_valign(grid, GTK_ALIGN_CENTER);
@@ -276,7 +316,7 @@ GtkWidget *create_menu_window(GtkApplication *app) {
     GtkWidget *notebook = gtk_notebook_new();
     gtk_notebook_set_tab_pos(GTK_NOTEBOOK(notebook), GTK_POS_LEFT);
 
-    const char *tab_labels[] = {"Create page from scratch", "Create page from template", "Load page"};
+    const char *tab_labels[] = {"Create page from template", "Create page from scratch", "Load page"};
 
     for (int i = 0; i < G_N_ELEMENTS(tab_labels); i++) {
         GtkWidget *page = gtk_grid_new();
@@ -287,9 +327,8 @@ GtkWidget *create_menu_window(GtkApplication *app) {
 
         gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page, label);
 
-        // "Create page from scratch"
         switch (i) {
-            case 0:
+            case 1:
                 GtkWidget *large_label = gtk_label_new("Create a page from scratch");
                 PangoFontDescription *large_font_desc = pango_font_description_from_string("Sans 24");
                 gtk_widget_override_font(large_label, large_font_desc);
@@ -308,7 +347,7 @@ GtkWidget *create_menu_window(GtkApplication *app) {
                 // g_signal_connect(start_button, "clicked", G_CALLBACK(start_button_clicked), NULL);
                 break;
 
-            case 1:
+            case 0:
                 // Créer le titre "Create a page from template"
                 GtkWidget *template_label = gtk_label_new("Create a page from template");
                 PangoFontDescription *template_font_desc = pango_font_description_from_string("Sans 24");
@@ -461,12 +500,11 @@ static void activate_menu(GtkApplication *app, gpointer user_data) {
 
 int main(int argc, char *argv[]) {
     int status;
-    sqlite3 *db;
     char *errMsg = 0;
 
     // Initialiser GTK
     GtkApplication *app = gtk_application_new("projet.c", G_APPLICATION_DEFAULT_FLAGS);
-    g_signal_connect(app, "activate", G_CALLBACK(launch), NULL);
+    g_signal_connect(app, "activate", G_CALLBACK(activate_menu), NULL);
 
     // Ouvrir la base de données (elle sera créée si elle n'existe pas)
     if (sqlite3_open("DataBase.db", &db) == SQLITE_OK) {
@@ -494,13 +532,15 @@ int main(int argc, char *argv[]) {
         } else {
             printf("Table Entreprise_Website créée avec succès.\n");
 
-            // Ajouter un tuple à la table avec les valeurs correspondant au fichier HTML de template du site d'entreprise
-            const char *insertTemplateEntreprise =
-                "INSERT INTO Entreprise_Website (name, about_us, slogan, contact, body_color, body_font_family, "
-                "header_bg_color, header_text_color, a_text_color, footer_bg_color, footer_text_color, hero_bg_color) "
-                "VALUES ('Nom de l''Entreprise', 'Une brève description de l''entreprise et de son histoire.', 'Un slogan pour l''entreprise', "
-                "'Adresse, numéro de téléphone, formulaire de contact, etc.', '#f4f4f4', 'Arial, sans-serif', "
-                "'#333', '#fff', '#fff', '#333', '#fff', '#f4f4f4');";
+        // Ajouter le template à la table uniquement si elle est vide (et que le template n'existe donc pas déjà)
+        const char *insertTemplateEntreprise =
+            "INSERT INTO Entreprise_Website (name, about_us, slogan, contact, body_color, body_font_family, "
+            "header_bg_color, header_text_color, a_text_color, footer_bg_color, footer_text_color, hero_bg_color) "
+            "SELECT 'Nom de l''Entreprise', 'Une brève description de l''entreprise et de son histoire.', 'Un slogan pour l''entreprise', "
+            "'Adresse, numéro de téléphone, formulaire de contact, etc.', '#f4f4f4', 'Arial, sans-serif', "
+            "'#333', '#fff', '#fff', '#333', '#fff', '#f4f4f4' "
+            "WHERE NOT EXISTS (SELECT 1 FROM Entreprise_Website LIMIT 1);";
+
 
             if (sqlite3_exec(db, insertTemplateEntreprise, 0, 0, &errMsg) != SQLITE_OK) {
                 fprintf(stderr, "Erreur lors de l'insertion du tuple : %s\n", errMsg);
