@@ -148,18 +148,20 @@ void generate_Entreprise_Website(const char *name, const char *about, const char
 }   
 
 // Fonction callback pour le bouton "Enregistrer"
-void save_entreprise_website(GtkWidget *button, gpointer user_data) {
-    GtkWidget **entries = (GtkWidget **)user_data;
+void save_entreprise_website(GtkWidget *button, GtkWidget **entries) {
+    const char *values[12];
 
     for (int i = 0; i < 12; i++) {
         if (GTK_IS_ENTRY(entries[i])) {
-            const char *text = gtk_entry_get_text(GTK_ENTRY(entries[i]));
-            g_print("%s\n", text);
+            const gchar *entry_text = gtk_entry_get_text(GTK_ENTRY(entries[i]));
+            values[i] = entry_text;
+            g_print("Entry %d Text: %s \n", i, entry_text);
         } else {
-            g_print("Element %d n'est pas un GtkEntry\n", i);
+            g_print("L'élément %d n'est pas un GtkEntry\n", i);
         }
     }
 }
+
 
 //Fonction qui créée le formulaire de personnalisation du template de site d'entreprise
 GtkWidget *create_Entreprise_form(GtkApplication *app) {
@@ -180,7 +182,7 @@ GtkWidget *create_Entreprise_form(GtkApplication *app) {
     };
 
     // Créer un tableau de widgets pour stocker les zones de texte
-    GtkWidget *entries[G_N_ELEMENTS(parameters)];
+    GtkWidget **entries = malloc(G_N_ELEMENTS(parameters) * sizeof(GtkWidget *));
 
     const char *default_texts[] = {
         "Nom de l'Entreprise","Une brève description de l'entreprise et de son histoire", "Un slogan pour l'entreprise",
@@ -419,6 +421,7 @@ static void activate_Entreprise(GtkApplication *app, gpointer user_data) {
     }
 
     gtk_main();
+    g_signal_connect(login_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 }
 
 //Procédure se lançant au démarrage de l'application
@@ -446,30 +449,27 @@ static void activate_menu(GtkApplication *app, gpointer user_data) {
     }
 
     gtk_main();
+    g_signal_connect(login_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 }
 
 int main(int argc, char *argv[]) {
     int status;
-    int rc = sqlite3_open("DataBase.db", &db);
-    
-    GtkApplication *app = gtk_application_new("projet.c", G_APPLICATION_DEFAULT_FLAGS);
-    // Créer la fenêtre de connexion en appelant la fonction
-    g_signal_connect (app, "activate", G_CALLBACK (launch), NULL);
-
-    status = g_application_run (G_APPLICATION (app), argc, argv);
-    g_object_unref (app);
-    
-    //On ouvre la BDD
+    sqlite3 *db;
     char *errMsg = 0;
+
+    // Initialiser GTK
+    GtkApplication *app = gtk_application_new("projet.c", G_APPLICATION_DEFAULT_FLAGS);
+    g_signal_connect(app, "activate", G_CALLBACK(launch), NULL);
 
     // Ouvrir la base de données (elle sera créée si elle n'existe pas)
     if (sqlite3_open("DataBase.db", &db) == SQLITE_OK) {
         // Créer la table Entreprise_Website
-        const char *createTableSQL = 
+        const char *createTableSQL =
             "CREATE TABLE IF NOT EXISTS Entreprise_Website ("
             "id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "name TEXT,"
             "about_us TEXT,"
+            "slogan TEXT,"
             "contact TEXT,"
             "body_color TEXT,"
             "body_font_family TEXT,"
@@ -481,7 +481,6 @@ int main(int argc, char *argv[]) {
             "hero_bg_color TEXT"
             ");";
 
-
         if (sqlite3_exec(db, createTableSQL, 0, 0, &errMsg) != SQLITE_OK) {
             fprintf(stderr, "Erreur lors de la création de la table : %s\n", errMsg);
             sqlite3_free(errMsg);
@@ -489,11 +488,11 @@ int main(int argc, char *argv[]) {
             printf("Table Entreprise_Website créée avec succès.\n");
 
             // Ajouter un tuple à la table avec les valeurs correspondant au fichier HTML de template du site d'entreprise
-            const char *insertTemplateEntreprise = 
-                "INSERT INTO Entreprise_Website (name, about_us, contact, body_color, body_font_family, "
+            const char *insertTemplateEntreprise =
+                "INSERT INTO Entreprise_Website (name, about_us, slogan, contact, body_color, body_font_family, "
                 "header_bg_color, header_text_color, a_text_color, footer_bg_color, footer_text_color, hero_bg_color) "
-                "VALUES (\"Nom de l'Entreprise\", \"Une brève description de l'entreprise et de son histoire.\", "
-                "\"Adresse, numéro de téléphone, formulaire de contact, etc.\", '#f4f4f4', 'Arial, sans-serif', "
+                "VALUES ('Nom de l''Entreprise', 'Une brève description de l''entreprise et de son histoire.', 'Un slogan pour l''entreprise', "
+                "'Adresse, numéro de téléphone, formulaire de contact, etc.', '#f4f4f4', 'Arial, sans-serif', "
                 "'#333', '#fff', '#fff', '#333', '#fff', '#f4f4f4');";
 
             if (sqlite3_exec(db, insertTemplateEntreprise, 0, 0, &errMsg) != SQLITE_OK) {
@@ -510,14 +509,10 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Impossible d'ouvrir la base de données.\n");
     }
 
-    
-    //test pour voir si les générations de site fonctionnent
-    generate_Entreprise_Website("ESGI", "Bonjourent oui", "Ceci est un slogan","0836656565",
-                 "#bbbbbb", "Arial, sans-serif", "#333", "#fff", "#fff", "#333", "#fff", "#f4f4f4");
-
-    sqlite3_close(db);
-
-    return 0;
+    // Exécuter l'application GTK
+    status = g_application_run(G_APPLICATION(app), argc, argv);
+    g_object_unref(app);
 
     return status;
 }
+

@@ -1,2 +1,6 @@
 /.dist
+/.vscode
+/.idea
+Generated.html
 main.exe
+DataBase.db
