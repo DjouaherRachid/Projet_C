@@ -27,7 +27,7 @@ void generate_Entreprise_Website(const char *name, const char *about, const char
                   const char *a_text_color, const char *footer_bg_color,
                   const char *footer_text_color, const char *hero_bg_color) {
 
-    FILE *file = fopen("Bonjourent.html", "w");
+    FILE *file = fopen("Generated.html", "w");
 
     if (file != NULL) {
         fprintf(file, "<!DOCTYPE html>\n");
@@ -147,8 +147,18 @@ void generate_Entreprise_Website(const char *name, const char *about, const char
     }
 }   
 
-save_entreprise_website(){
+// Fonction callback pour le bouton "Enregistrer"
+void save_entreprise_website(GtkWidget *button, gpointer user_data) {
+    GtkWidget **entries = (GtkWidget **)user_data;
 
+    for (int i = 0; i < 12; i++) {
+        if (GTK_IS_ENTRY(entries[i])) {
+            const char *text = gtk_entry_get_text(GTK_ENTRY(entries[i]));
+            g_print("%s\n", text);
+        } else {
+            g_print("Element %d n'est pas un GtkEntry\n", i);
+        }
+    }
 }
 
 //Fonction qui créée le formulaire de personnalisation du template de site d'entreprise
@@ -169,8 +179,11 @@ GtkWidget *create_Entreprise_form(GtkApplication *app) {
         "Footer Text Color", "Hero BG Color"
     };
 
+    // Créer un tableau de widgets pour stocker les zones de texte
+    GtkWidget *entries[G_N_ELEMENTS(parameters)];
+
     const char *default_texts[] = {
-        "Nom de l'Entreprise","Une brève description de l'entreprise et de son histoire", 
+        "Nom de l'Entreprise","Une brève description de l'entreprise et de son histoire", "Un slogan pour l'entreprise",
         "Adresse, numéro de téléphone, formulaire de contact, etc.", "#f4f4f4", "Arial, sans-serif", 
         "#333", "#fff", "#fff", "#333", "#fff", "#f4f4f4"
     };
@@ -180,13 +193,11 @@ GtkWidget *create_Entreprise_form(GtkApplication *app) {
         GtkWidget *entry = gtk_entry_new();
         gtk_entry_set_text(GTK_ENTRY(entry), default_texts[i]);
 
-        // Ajuster la taille de la police pour les étiquettes et les entrées
         PangoFontDescription *font_desc = pango_font_description_from_string("Sans Bold 14");
         gtk_widget_override_font(label, font_desc);
         gtk_widget_override_font(entry, font_desc);
         pango_font_description_free(font_desc);
 
-        // Ajouter de l'espace vertical entre les widgets
         int vertical_spacing = 10;
         gtk_widget_set_margin_bottom(label, vertical_spacing);
         gtk_widget_set_margin_bottom(entry, vertical_spacing);
@@ -197,10 +208,13 @@ GtkWidget *create_Entreprise_form(GtkApplication *app) {
         // Ajouter les widgets au GtkGrid avec les ajustements de taille de police et d'espace vertical
         gtk_grid_attach(GTK_GRID(grid), label, 0, i, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), entry, 1, i, 1, 1);
+
+        // Stocker les entrées dans le tableau entries
+        entries[i] = entry;
     }
 
     GtkWidget *submit_button = gtk_button_new_with_label("Enregistrer");
-    g_signal_connect(submit_button, "clicked", G_CALLBACK(save_entreprise_website), NULL);
+    g_signal_connect(submit_button, "clicked", G_CALLBACK(save_entreprise_website), entries);
 
     // Ajouter de l'espace vertical entre le dernier champ et le bouton
     int vertical_spacing = 20;
