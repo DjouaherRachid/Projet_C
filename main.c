@@ -245,7 +245,7 @@ void generate_ECommerce_Site(const char *site_name, const char *site_description
                             const char *contact_email, const char *footer_text) {
 
     char filename[256];
-    snprintf(filename, sizeof(filename), "Generated_Websites/ECommerceSite_%s.html", site_name);
+    snprintf(filename, sizeof(filename), "Generated_Websites/ECommerce_Website_%s.html", site_name);
 
     FILE *file = fopen(filename, "w");
 
@@ -340,7 +340,7 @@ void generate_ECommerce_Site(const char *site_name, const char *site_description
 
 // Fonction de rappel pour le bouton "OK" après avoir ajouté un site à la BDD
 void on_dialog_response(GtkDialog *dialog, gint response_id, gpointer user_data) {
-    g_print("Réponse du bouton : %d\n", response_id);
+    //g_print("Réponse du bouton : %d\n", response_id);
     gtk_widget_destroy(GTK_WIDGET(dialog));  
         if (form_window != NULL) {
         gtk_widget_destroy(form_window);
@@ -375,7 +375,7 @@ void save_ecommerce(GtkWidget *button, GtkWidget **entries) {
 
         // Construction de la requête avec sqlite3_mprintf
         const char *insertQuery = sqlite3_mprintf(
-                "INSERT INTO ECommerceSite (site_name, site_description, "
+                "INSERT INTO ECommerce_Website (site_name, site_description, "
                 "header_title, header_description, "
                 "product1_title, product1_description, product1_price, "
                 "product2_title, product2_description, product2_price, "
@@ -392,7 +392,7 @@ void save_ecommerce(GtkWidget *button, GtkWidget **entries) {
         if (result != SQLITE_OK) {
             fprintf(stderr, "Erreur lors de l'insertion dans la table : %s\n", sqlite3_errmsg(db));
         } else {
-            printf("Entreprise ajoutée avec succès.\n");
+            printf("Site d'e-commerce ajoutée avec succès.\n");
 
             // Création d'une fenêtre de dialogue
             GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(form_window),GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -979,7 +979,7 @@ void initializeDatabase() {
 
     // Ouvrir la base de données (elle sera créée si elle n'existe pas)
     if (sqlite3_open("DataBase.db", &db) == SQLITE_OK) {
-        const char *createTableSQL =
+        const char *createTableEntreprise =
             "CREATE TABLE IF NOT EXISTS Entreprise_Website ("
             "id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "name TEXT,"
@@ -1000,7 +1000,7 @@ void initializeDatabase() {
             "hero_bg_color TEXT"
             ");";
 
-        if (sqlite3_exec(db, createTableSQL, 0, 0, &errMsg) != SQLITE_OK) {
+        if (sqlite3_exec(db, createTableEntreprise, 0, 0, &errMsg) != SQLITE_OK) {
             fprintf(stderr, "Erreur lors de la création de la table : %s\n", errMsg);
             sqlite3_free(errMsg);
         } else {
@@ -1029,7 +1029,7 @@ void initializeDatabase() {
         }
 
          const char *createTableCommerce =
-            "CREATE TABLE IF NOT EXISTS ECommerceSite ("
+            "CREATE TABLE IF NOT EXISTS ECommerce_Website ("
             "id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "site_name TEXT,"
             "site_description TEXT,"
@@ -1053,6 +1053,39 @@ void initializeDatabase() {
 
         if (sqlite3_exec(db, createTableCommerce, 0, 0, &errMsg) != SQLITE_OK) {
             fprintf(stderr, "Erreur lors de la création de la table : %s\n", errMsg);
+            sqlite3_free(errMsg);
+        } else {
+            printf("Table Commerce créée avec succès.\n");
+        }
+
+        const char *createTableTravel =
+            "CREATE TABLE IF NOT EXISTS Travel_Website ("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+            "name TEXT,"
+            "slogan TEXT,"
+            "about_us TEXT,"
+            "header_title TEXT,"
+            "header_description TEXT,"
+            "destination1_title TEXT,"
+            "destination1_image TEXT,"
+            "destination1_description TEXT,"
+            "destination2_title TEXT,"
+            "destination2_image TEXT,"
+            "destination2_description TEXT,"
+            "special_offer1_title TEXT,"
+            "special_offer1_image TEXT,"
+            "special_offer1_description TEXT,"
+            "special_offer2_title TEXT,"
+            "special_offer2_image TEXT,"
+            "special_offer2_description TEXT,"
+            "contact_email TEXT,"
+            "footer_text TEXT"
+            ");"
+        ;
+
+
+        if (sqlite3_exec(db, createTableTravel, 0, 0, &errMsg) != SQLITE_OK) {
+            fprintf(stderr, "Erreur lors de la création de la table Travel_Website : %s\n", errMsg);
             sqlite3_free(errMsg);
         } else {
             printf("Table Commerce créée avec succès.\n");
@@ -1098,7 +1131,7 @@ void initializeDatabase() {
             } 
 
             const char *insertTemplateECommerceSite =
-                "INSERT INTO ECommerceSite (site_name, site_description, "
+                "INSERT INTO ECommerce_Website (site_name, site_description, "
                 "header_title, header_description, "
                 "product1_title, product1_description, product1_price, "
                 "product2_title, product2_description, product2_price, "
@@ -1113,7 +1146,7 @@ void initializeDatabase() {
                 "'Produit 3', 'Description du produit 3', '$24.99', "
                 "'Produit 4', 'Description du produit 4', '$39.99', "
                 "'contact@monsite.com', '© 2024 Mon Site d''E-commerce. Tous droits réservés.' "
-                "WHERE NOT EXISTS (SELECT 1 FROM ECommerceSite LIMIT 1)";
+                "WHERE NOT EXISTS (SELECT 1 FROM ECommerce_Website LIMIT 1)";
 
             if (sqlite3_exec(db, insertTemplateECommerceSite, 0, 0, &errMsg) != SQLITE_OK) {
                 fprintf(stderr, "Erreur lors de l'insertion du tuple : %s\n", errMsg);
@@ -1122,8 +1155,47 @@ void initializeDatabase() {
                 printf("Template du site d'e-commerce ajouté avec succès.\n");
             } 
 
+            const char *insertTemplateTravel =
+                "INSERT INTO Travel_Website ("
+                "name, slogan, about_us,"
+                "header_title, header_description,"
+                "destination1_title, destination1_image, destination1_description,"
+                "destination2_title, destination2_image, destination2_description,"
+                "special_offer1_title, special_offer1_image, special_offer1_description,"
+                "special_offer2_title, special_offer2_image, special_offer2_description,"
+                "contact_email, footer_text)"
+                "SELECT"
+                "'Nom de l''Agence',"
+                "'Votre prochaine aventure commence ici.',"
+                "'Découvrez des destinations extraordinaires et vivez des expériences inoubliables.',"
+                "'Explorez le Monde',"
+                "'Découvrez des destinations extraordinaires et vivez des expériences inoubliables.',"
+                "'Paris, France',"
+                "'paris.jpg',"
+                "'Découvrez la Ville Lumière avec ses monuments emblématiques.',"
+                "'Tokyo, Japon',"
+                "'tokyo.jpg',"
+                "'Explorez la modernité et la tradition dans la capitale du Japon.',"
+                "'Voyage tout compris à Bali',"
+                "'bali.jpg',"
+                "'Profitez de plages paradisiaques et d''une expérience culturelle unique.',"
+                "'Croisière dans les Caraïbes',"
+                "'caraibes.jpg',"
+                "'Partez pour une aventure en mer à la découverte des îles des Caraïbes.',"
+                "'info@agencedevoyage.com',"
+                "'&copy; 2024 Agence de Voyage. Tous droits réservés.'"
+                "WHERE NOT EXISTS (SELECT 1 FROM Travel_Website LIMIT 1);"
+            ;
+            
+            if (sqlite3_exec(db, insertTemplateTravel, 0, 0, &errMsg) != SQLITE_OK) {
+                fprintf(stderr, "Erreur lors de l'insertion du tuple template travel: %s\n", errMsg);
+                sqlite3_free(errMsg);
+            } else {
+                printf("Template du blog ajouté avec succès.\n");
+            } 
+
     //test pour voir l'état de la BDD (à supprimer)
-    const char *selectQuery = "SELECT * FROM Entreprise_Website";
+    const char *selectQuery = "SELECT * FROM Travel_Website";
 
     int rc;
     rc = sqlite3_exec(db, selectQuery, callback, 0, &errMsg);
