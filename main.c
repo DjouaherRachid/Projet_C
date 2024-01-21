@@ -235,6 +235,108 @@ void generate_Personal_Blog(const char *blog_title, const char *blog_description
     }
 }
 
+//Site d'e-commerce
+void generate_ECommerce_Site(const char *site_name, const char *site_description,
+                            const char *header_title, const char *header_description,
+                            const char *product1_title, const char *product1_description, const char *product1_price,
+                            const char *product2_title, const char *product2_description, const char *product2_price,
+                            const char *product3_title, const char *product3_description, const char *product3_price,
+                            const char *product4_title, const char *product4_description, const char *product4_price,
+                            const char *contact_email, const char *footer_text) {
+
+    char filename[256];
+    snprintf(filename, sizeof(filename), "Generated_Websites/ECommerceSite_%s.html", site_name);
+
+    FILE *file = fopen(filename, "w");
+
+    if (file != NULL) {
+        fprintf(file,
+                "<!DOCTYPE html>\n"
+                "<html lang=\"en\">\n"
+                "<head>\n"
+                "<meta charset=\"UTF-8\">\n"
+                "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+                "<style>\n"
+                "body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; box-sizing: border-box; background-color: #f5f5f5; color: #333; }\n"
+                "header { background-color: #4285f4; color: #fff; padding: 20px; text-align: center; }\n"
+                "nav ul { list-style: none; margin: 0; padding: 0; }\n"
+                "nav li { display: inline; margin-right: 20px; }\n"
+                "a { text-decoration: none; color: #4285f4; }\n"
+                ".product { background-color: #fff; margin: 20px; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }\n"
+                ".product h3 { color: #4285f4; }\n"
+                ".product p { color: #666; }\n"
+                "section { padding: 40px; }\n"
+                "footer { background-color: #333; color: #fff; text-align: center; padding: 10px; }\n"
+                "</style>\n"
+                "<title>%s</title>\n"
+                "</head>\n"
+                "<body>\n"
+                "<header>\n"
+                "    <h1>%s</h1>\n"
+                "    <p>%s</p>\n"
+                "</header>\n"
+                "<nav>\n"
+                "    <ul>\n"
+                "        <li><a href=\"#accueil\">Accueil</a></li>\n"
+                "        <li><a href=\"#produits\">Produits</a></li>\n"
+                "        <li><a href=\"#panier\">Panier</a></li>\n"
+                "        <li><a href=\"#contact\">Contact</a></li>\n"
+                "    </ul>\n"
+                "</nav>\n"
+                "<section id=\"accueil\">\n"
+                "    <div class=\"product\">\n"
+                "        <h3>%s</h3>\n"
+                "        <p>%s</p>\n"
+                "        <p>Prix: %s</p>\n"
+                "        <button>Ajouter au panier</button>\n"
+                "    </div>\n"
+                "    <div class=\"product\">\n"
+                "        <h3>%s</h3>\n"
+                "        <p>%s</p>\n"
+                "        <p>Prix: %s</p>\n"
+                "        <button>Ajouter au panier</button>\n"
+                "    </div>\n"
+                "</section>\n"
+                "<section id=\"produits\">\n"
+                "    <div class=\"product\">\n"
+                "        <h3>%s</h3>\n"
+                "        <p>%s</p>\n"
+                "        <p>Prix: %s</p>\n"
+                "        <button>Ajouter au panier</button>\n"
+                "    </div>\n"
+                "    <div class=\"product\">\n"
+                "        <h3>%s</h3>\n"
+                "        <p>%s</p>\n"
+                "        <p>Prix: %s</p>\n"
+                "        <button>Ajouter au panier</button>\n"
+                "    </div>\n"
+                "</section>\n"
+                "<section id=\"panier\">\n"
+                "    <h2>Panier</h2>\n"
+                "    <!-- Contenu du panier -->\n"
+                "</section>\n"
+                "<section id=\"contact\">\n"
+                "    <h2>Contactez-nous</h2>\n"
+                "    <p>Vous pouvez nous contacter à l'adresse email suivante : <a href=\"mailto:%s\">%s</a></p>\n"
+                "</section>\n"
+                "<footer>\n"
+                "    <p>%s</p>\n"
+                "</footer>\n"
+                "</body>\n"
+                "</html>\n",
+                site_name, site_name, site_description,
+                product1_title, product1_description, product1_price,
+                product2_title, product2_description, product2_price,
+                product3_title, product3_description, product3_price,
+                product4_title, product4_description, product4_price,
+                contact_email, contact_email, footer_text);
+
+        fclose(file);
+        printf("Fichier HTML généré avec succès : %s\n", filename);
+    } else {
+        fprintf(stderr, "Erreur lors de l'ouverture du fichier HTML de sortie.\n");
+    }
+}
 
 // Fonction de rappel pour le bouton "OK" après avoir ajouté un site à la BDD
 void on_dialog_response(GtkDialog *dialog, gint response_id, gpointer user_data) {
