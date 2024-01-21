@@ -10,9 +10,9 @@ static void launch(GtkApplication *app, gpointer user_data);
 static void activate_menu(GtkApplication *app, gpointer user_data);
 static void activate_Entreprise(GtkApplication *app, gpointer user_data);
 static void activate_Blog(GtkApplication *app, gpointer user_data);
+static void activate_Commerce(GtkApplication *app, gpointer user_data);
 /*
 static void activate_Travel(GtkApplication *app, gpointer user_data);
-static void activate_Commerce(GtkApplication *app, gpointer user_data);
 static void activate_CV(GtkApplication *app, gpointer user_data);
 */
 
@@ -350,9 +350,9 @@ void on_dialog_response(GtkDialog *dialog, gint response_id, gpointer user_data)
 }
 
 void save_ecommerce(GtkWidget *button, GtkWidget **entries) {
-    const char *values[19];
+    const char *values[18];
 
-    for (int i = 0; i < 19; i++) {
+    for (int i = 0; i < 18; i++) {
         if (GTK_IS_ENTRY(entries[i])) {
             const gchar *entry_text = gtk_entry_get_text(GTK_ENTRY(entries[i]));
             values[i] = entry_text;
@@ -382,10 +382,10 @@ void save_ecommerce(GtkWidget *button, GtkWidget **entries) {
                 "product3_title, product3_description, product3_price, "
                 "product4_title, product4_description, product4_price, "
                 "contact_email, footer_text) "
-            "VALUES ('%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q');",
+            "VALUES ('%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q');",
             values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7],
             values[8], values[9], values[10], values[11], values[12], values[13], values[14], values[15],
-            values[16], values[17], values[18]);
+            values[16], values[17]);
 
         // Exécuter la requête préparée
         int result = sqlite3_exec(db, insertQuery, 0, 0, 0);
@@ -686,10 +686,10 @@ GtkWidget *create_template_widget(const char *template_name) {
 
     if (strcmp(template_name, "Blog Personnel") == 0) 
     g_signal_connect(button, "clicked", G_CALLBACK(activate_Blog), NULL);
-    /*
+    
     if (strcmp(template_name, "Site d'e-commerce") == 0) 
     g_signal_connect(button, "clicked", G_CALLBACK(activate_Commerce), NULL);
-
+    /*
     if (strcmp(template_name, "Site d'Agence de Voyage") == 0) 
     g_signal_connect(button, "clicked", G_CALLBACK(activate_Travel), NULL);
 
@@ -887,7 +887,7 @@ static void activate_Blog(GtkApplication *app, gpointer user_data){
 }
 
 static void activate_Commerce(GtkApplication *app, gpointer user_data){
-    form_window = create_form(app,"Créez votre propre site d'e-commerce","ECommerce",19);
+    form_window = create_form(app,"Créez votre propre site d'e-commerce","ECommerce",18);
 
     gtk_widget_show_all(form_window);
     g_signal_connect(form_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
