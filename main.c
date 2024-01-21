@@ -349,6 +349,68 @@ void on_dialog_response(GtkDialog *dialog, gint response_id, gpointer user_data)
     }
 }
 
+void save_ecommerce(GtkWidget *button, GtkWidget **entries) {
+    const char *values[19];
+
+    for (int i = 0; i < 19; i++) {
+        if (GTK_IS_ENTRY(entries[i])) {
+            const gchar *entry_text = gtk_entry_get_text(GTK_ENTRY(entries[i]));
+            values[i] = entry_text;
+            g_print("Entry %d Text: %s \n", i, values[i]);
+        } else {
+            g_print("L'élément %d n'est pas un GtkEntry\n", i);
+        }
+    }
+    free(entries);
+
+    // Génération du code html/css:
+    generate_ECommerce_Site(values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7],
+                                values[8], values[9], values[10], values[11], values[12], values[13], values[14], values[15],
+                                values[16], values[17]);
+
+    // Ouvrir la base de données
+    sqlite3 *db;
+    if (sqlite3_open("DataBase.db", &db) == SQLITE_OK) {
+        printf("BDD ouverte correctement \n");
+
+        // Construction de la requête avec sqlite3_mprintf
+        const char *insertQuery = sqlite3_mprintf(
+                "INSERT INTO ECommerceSite (site_name, site_description, "
+                "header_title, header_description, "
+                "product1_title, product1_description, product1_price, "
+                "product2_title, product2_description, product2_price, "
+                "product3_title, product3_description, product3_price, "
+                "product4_title, product4_description, product4_price, "
+                "contact_email, footer_text) "
+            "VALUES ('%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q');",
+            values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7],
+            values[8], values[9], values[10], values[11], values[12], values[13], values[14], values[15],
+            values[16], values[17], values[18]);
+
+        // Exécuter la requête préparée
+        int result = sqlite3_exec(db, insertQuery, 0, 0, 0);
+        if (result != SQLITE_OK) {
+            fprintf(stderr, "Erreur lors de l'insertion dans la table : %s\n", sqlite3_errmsg(db));
+        } else {
+            printf("Entreprise ajoutée avec succès.\n");
+
+            // Création d'une fenêtre de dialogue
+            GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(form_window),GTK_DIALOG_DESTROY_WITH_PARENT,
+            GTK_MESSAGE_INFO,GTK_BUTTONS_OK,"Site Successfully Registered");
+            g_signal_connect_swapped(G_OBJECT(dialog), "response", G_CALLBACK(on_dialog_response), NULL);
+            gint result = gtk_dialog_run(GTK_DIALOG(dialog));
+
+            // Ajout d'un message de débogage supplémentaire
+            printf("Après l'insertion.\n");
+        }
+
+        // Fermer la base de données
+        sqlite3_close(db);
+    } else {
+        fprintf(stderr, "Impossible d'ouvrir la base de données.\n");
+    }
+}
+
 void save_blog(GtkWidget *button, GtkWidget **entries) {
     const char *values[10];
 
@@ -507,7 +569,6 @@ GtkWidget *create_form(GtkApplication *app, const char *form_title, const char *
     };
     type=1;
     }
-
     if (strcmp(Website_Type, "Blog") == 0) {
         parameters = (const char *[]){
         "Blog Title", "Blog Description",
@@ -523,6 +584,27 @@ GtkWidget *create_form(GtkApplication *app, const char *form_title, const char *
         };
         type=2;
         }
+    if (strcmp(Website_Type, "ECommerce") == 0) {
+        parameters = (const char *[]) {
+        "site_title", "site_description",
+        "welcome_title", "welcome_message",
+        "product1_name", "product1_description", "product1_price",
+        "product2_name", "product2_description", "product2_price",
+        "product3_name", "product3_description", "product3_price",
+        "product4_name", "product4_description", "product4_price",
+        "contact_email", "footer_text"
+    };
+        default_texts = (const char *[]) {
+        "Mon Site E-Commerce", "Description de mon site e-commerce",
+        "Bienvenue sur Mon Site E-Commerce", "Découvrez nos produits de qualité.",
+        "Produit 1", "Description du produit 1", "$19.99",
+        "Produit 2", "Description du produit 2", "$29.99",
+        "Produit 3", "Description du produit 3", "$24.99",
+        "Produit 4", "Description du produit 4", "$39.99",
+        "contact@monsite.com", "© 2024 Mon Site E-Commerce. Tous droits réservés."
+    };
+    type=3;
+    }
 
     // Créer un tableau de widgets pour stocker les zones de texte
     GtkWidget **entries = malloc(num_elements * sizeof(GtkWidget *));
@@ -556,7 +638,9 @@ GtkWidget *create_form(GtkApplication *app, const char *form_title, const char *
     }
 
     // Ajouter le bouton "Enregistrer" à la fin
-    GtkWidget *submit_button = gtk_button_new_with_label("Enregistrer");
+    GtkWidget *submit_button = gtk_button_new_with_label("Save");
+    GtkWidget *cancel_button = gtk_button_new_with_label("Cancel");
+
     switch(type){
     case 1:
         g_signal_connect(submit_button, "clicked", G_CALLBACK(save_entreprise_website), entries);
@@ -564,17 +648,21 @@ GtkWidget *create_form(GtkApplication *app, const char *form_title, const char *
     case 2:
         g_signal_connect(submit_button, "clicked", G_CALLBACK(save_blog), entries);
     break;
+    case 3:
+        g_signal_connect(submit_button, "clicked", G_CALLBACK(save_ecommerce), entries);
+    break;
     }
+
+    g_signal_connect(cancel_button, "clicked", G_CALLBACK(activate_menu), NULL);
 
     // Ajouter de l'espace vertical entre le dernier champ et le bouton
     int vertical_spacing_button = 20;
     gtk_widget_set_margin_bottom(submit_button, vertical_spacing_button);
+    gtk_widget_set_margin_bottom(cancel_button, vertical_spacing_button);
 
-    // Multiplier par 2 la largeur du bouton
-    gtk_widget_set_size_request(submit_button, 2 * gtk_widget_get_allocated_width(submit_button), -1);
-
-    // Ajouter le bouton au GtkGrid
-    gtk_grid_attach(GTK_GRID(grid), submit_button, 0, num_elements + 1, 2, 1);
+    // Ajouter les boutons au GtkGrid
+    gtk_grid_attach(GTK_GRID(grid), submit_button, 0, num_elements + 1, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), cancel_button, 1, num_elements + 1, 1, 1);
 
     gtk_widget_set_halign(grid, GTK_ALIGN_CENTER);
     gtk_widget_set_valign(grid, GTK_ALIGN_CENTER);
@@ -797,9 +885,9 @@ static void activate_Blog(GtkApplication *app, gpointer user_data){
 
     gtk_main();
 }
-/*
-static void activate_Travel(GtkApplication *app, gpointer user_data){
-    form_window = create_form(app,"Créez votre propre site d'entreprise","Entreprise",16);
+
+static void activate_Commerce(GtkApplication *app, gpointer user_data){
+    form_window = create_form(app,"Créez votre propre site d'e-commerce","ECommerce",19);
 
     gtk_widget_show_all(form_window);
     g_signal_connect(form_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
@@ -812,7 +900,9 @@ static void activate_Travel(GtkApplication *app, gpointer user_data){
 
     gtk_main();
 }
-static void activate_Commerce(GtkApplication *app, gpointer user_data){
+
+/*
+static void activate_Travel(GtkApplication *app, gpointer user_data){
     form_window = create_form(app,"Créez votre propre site d'entreprise","Entreprise",16);
 
     gtk_widget_show_all(form_window);
@@ -853,6 +943,10 @@ static void activate_menu(GtkApplication *app, gpointer user_data) {
     if (login_window != NULL) {
         gtk_widget_destroy(login_window);
         login_window = NULL;  
+    }
+    if (form_window!= NULL) {
+        gtk_widget_destroy(form_window);
+        form_window = NULL;  
     }
 
     gtk_main();
