@@ -832,6 +832,36 @@ void initializeDatabase() {
             printf("Table Blog créée avec succès.\n");
         }
 
+         const char *createTableCommerce =
+            "CREATE TABLE IF NOT EXISTS ECommerceSite ("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+            "site_name TEXT,"
+            "site_description TEXT,"
+            "header_title TEXT,"
+            "header_description TEXT,"
+            "product1_title TEXT,"
+            "product1_description TEXT,"
+            "product1_price TEXT,"
+            "product2_title TEXT,"
+            "product2_description TEXT,"
+            "product2_price TEXT,"
+            "product3_title TEXT,"
+            "product3_description TEXT,"
+            "product3_price TEXT,"
+            "product4_title TEXT,"
+            "product4_description TEXT,"
+            "product4_price TEXT,"
+            "contact_email TEXT,"
+            "footer_text TEXT);"
+        ;
+
+        if (sqlite3_exec(db, createTableCommerce, 0, 0, &errMsg) != SQLITE_OK) {
+            fprintf(stderr, "Erreur lors de la création de la table : %s\n", errMsg);
+            sqlite3_free(errMsg);
+        } else {
+            printf("Table Commerce créée avec succès.\n");
+        }
+
             // Ajouter le template à la table uniquement si elle est vide (et que le template n'existe donc pas déjà)
             const char *insertTemplateEntreprise =
                 "INSERT INTO Entreprise_Website (name, about_us, slogan, contact, "
@@ -869,9 +899,34 @@ void initializeDatabase() {
                 sqlite3_free(errMsg);
             } else {
                 printf("Template du blog ajouté avec succès.\n");
-            }
+            } 
 
-    //test pour voir l'état de la BDD
+            const char *insertTemplateECommerceSite =
+                "INSERT INTO ECommerceSite (site_name, site_description, "
+                "header_title, header_description, "
+                "product1_title, product1_description, product1_price, "
+                "product2_title, product2_description, product2_price, "
+                "product3_title, product3_description, product3_price, "
+                "product4_title, product4_description, product4_price, "
+                "contact_email, footer_text) "
+                "SELECT "
+                "'Nom du site', 'Description du site', "
+                "'Titre de l''en-tête', 'Description de l''en-tête', "
+                "'Produit 1', 'Description du produit 1', '$19.99', "
+                "'Produit 2', 'Description du produit 2', '$29.99', "
+                "'Produit 3', 'Description du produit 3', '$24.99', "
+                "'Produit 4', 'Description du produit 4', '$39.99', "
+                "'contact@monsite.com', '© 2024 Mon Site d''E-commerce. Tous droits réservés.' "
+                "WHERE NOT EXISTS (SELECT 1 FROM ECommerceSite LIMIT 1)";
+
+            if (sqlite3_exec(db, insertTemplateECommerceSite, 0, 0, &errMsg) != SQLITE_OK) {
+                fprintf(stderr, "Erreur lors de l'insertion du tuple : %s\n", errMsg);
+                sqlite3_free(errMsg);
+            } else {
+                printf("Template du site d'e-commerce ajouté avec succès.\n");
+            } 
+
+    //test pour voir l'état de la BDD (à supprimer)
     const char *selectQuery = "SELECT * FROM Entreprise_Website";
 
     int rc;
