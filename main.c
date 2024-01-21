@@ -9,6 +9,12 @@
 static void launch(GtkApplication *app, gpointer user_data);
 static void activate_menu(GtkApplication *app, gpointer user_data);
 static void activate_Entreprise(GtkApplication *app, gpointer user_data);
+static void activate_Blog(GtkApplication *app, gpointer user_data);
+/*
+static void activate_Travel(GtkApplication *app, gpointer user_data);
+static void activate_Commerce(GtkApplication *app, gpointer user_data);
+static void activate_CV(GtkApplication *app, gpointer user_data);
+*/
 
 GtkWidget *create_menu_window(GtkApplication *app);
 GtkWidget *create_login_window(GtkApplication *app);
@@ -330,7 +336,6 @@ GtkWidget *create_form(GtkApplication *app, const char *form_title, const char *
         "A Text Color", "Footer BG Color",
         "Footer Text Color", "Hero BG Color"
     };
-
         default_texts = (const char *[]){
         "Nom de l'Entreprise", "Une brève description de l'entreprise et de son histoire", 
         "Un slogan pour l'entreprise", "Adresse, numéro de téléphone, formulaire de contact, etc.", 
@@ -340,6 +345,20 @@ GtkWidget *create_form(GtkApplication *app, const char *form_title, const char *
         "#333", "#fff", "#fff", "#333", "#fff", "#f4f4f4"
     };
     }
+
+    if (strcmp(Website_Type, "Blog") == 0) {
+        parameters = (const char *[]){
+        "Blog Title", "Blog Description",
+        "Article 1 Title", "Article 1 Date", "Article 1 Content",
+        "Article 2 Title", "Article 2 Date", "Article 2 Content",
+        "About Me", "Contact Email"
+        };
+        default_texts = (const char *[]){
+        "Titre du blog", "Description du blog",
+        "Titre de l'article 1", "2024-01-01", "Contenu de l'article 1...",
+        "Titre de l'article 2", "2024-01-02", "Contenu de l'article 2...",
+        "À propos de moi", "contact@monblog.com"
+        };}
 
     // Créer un tableau de widgets pour stocker les zones de texte
     GtkWidget **entries = malloc(num_elements * sizeof(GtkWidget *));
@@ -392,6 +411,7 @@ GtkWidget *create_form(GtkApplication *app, const char *form_title, const char *
     return custom_form;
 }
 
+//Cette fonction sert à créer une box contenant un label titre et un bouton "select" pour chaque template dans le menu
 GtkWidget *create_template_widget(const char *template_name) {
     GtkWidget *template_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
@@ -404,6 +424,18 @@ GtkWidget *create_template_widget(const char *template_name) {
     //Cliquer sur le bouton ouvre le formulaire de personnalisation du site d'entreprise si on 
     if (strcmp(template_name, "Site d'Entreprise") == 0) 
     g_signal_connect(button, "clicked", G_CALLBACK(activate_Entreprise), NULL);
+
+    if (strcmp(template_name, "Blog Personnel") == 0) 
+    g_signal_connect(button, "clicked", G_CALLBACK(activate_Blog), NULL);
+    /*
+    if (strcmp(template_name, "Site d'e-commerce") == 0) 
+    g_signal_connect(button, "clicked", G_CALLBACK(activate_Commerce), NULL);
+
+    if (strcmp(template_name, "Site d'Agence de Voyage") == 0) 
+    g_signal_connect(button, "clicked", G_CALLBACK(activate_Travel), NULL);
+
+    if (strcmp(template_name, "Template de CV en Ligne") == 0) 
+    g_signal_connect(button, "clicked", G_CALLBACK(activate_CV), NULL);*/
 
     gtk_box_pack_start(GTK_BOX(template_box), label, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(template_box), button, FALSE, FALSE, 0);
@@ -483,7 +515,7 @@ GtkWidget *create_menu_window(GtkApplication *app) {
                 gtk_grid_set_row_homogeneous(GTK_GRID(templates_box), TRUE);
 
                 // Tableau de noms de templates
-                const char *template_names[] = {"Site d'Entreprise", "Blog Personnel ", "Site d'e-commerce", "Site d'Agence de Voyage", "Template de CV en Ligne"};
+                const char *template_names[] = {"Site d'Entreprise", "Blog Personnel", "Site d'e-commerce", "Site d'Agence de Voyage", "Template de CV en Ligne"};
 
                 // Ajouter les widgets de templates au conteneur avec une boucle
                 for (int j = 0; j < G_N_ELEMENTS(template_names); j++) {
@@ -580,16 +612,64 @@ static void activate_Entreprise(GtkApplication *app, gpointer user_data) {
     gtk_main();
 }
 
-//Procédure se lançant au démarrage de l'application
-static void launch(GtkApplication *app, gpointer user_data) {
-    login_window = create_login_window(app);
+static void activate_Blog(GtkApplication *app, gpointer user_data){
+    form_window = create_form(app,"Créez votre propre blog personnel","Blog",10);
 
-    gtk_widget_show_all(login_window);
+    gtk_widget_show_all(form_window);
+    g_signal_connect(form_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+    // Fermer la fenêtre du menu
+    if (menu_window != NULL) {
+        gtk_widget_destroy(menu_window);
+        menu_window = NULL;  
+    }
 
     gtk_main();
-
-    g_signal_connect(login_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 }
+/*
+static void activate_Travel(GtkApplication *app, gpointer user_data){
+    form_window = create_form(app,"Créez votre propre site d'entreprise","Entreprise",16);
+
+    gtk_widget_show_all(form_window);
+    g_signal_connect(form_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+    // Fermer la fenêtre du menu
+    if (menu_window != NULL) {
+        gtk_widget_destroy(menu_window);
+        menu_window = NULL;  
+    }
+
+    gtk_main();
+}
+static void activate_Commerce(GtkApplication *app, gpointer user_data){
+    form_window = create_form(app,"Créez votre propre site d'entreprise","Entreprise",16);
+
+    gtk_widget_show_all(form_window);
+    g_signal_connect(form_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+    // Fermer la fenêtre du menu
+    if (menu_window != NULL) {
+        gtk_widget_destroy(menu_window);
+        menu_window = NULL;  
+    }
+
+    gtk_main();
+}
+
+static void activate_CV(GtkApplication *app, gpointer user_data){
+    form_window = create_form(app,"Créez votre propre site d'entreprise","Entreprise",16);
+
+    gtk_widget_show_all(form_window);
+    g_signal_connect(form_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+    // Fermer la fenêtre du menu
+    if (menu_window != NULL) {
+        gtk_widget_destroy(menu_window);
+        menu_window = NULL;  
+    }
+
+    gtk_main();
+}*/
 
 //Procédure censée se lancer lorsque l'utilisateur appuie sur connexion et ouvrant le menu
 static void activate_menu(GtkApplication *app, gpointer user_data) {
@@ -608,7 +688,18 @@ static void activate_menu(GtkApplication *app, gpointer user_data) {
     g_signal_connect(login_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 }
 
+//Procédure se lançant au démarrage de l'application
+static void launch(GtkApplication *app, gpointer user_data) {
+    login_window = create_login_window(app);
 
+    gtk_widget_show_all(login_window);
+
+    gtk_main();
+
+    g_signal_connect(login_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+}
+
+//Fonction callback pour le test select permettant de voir l'état de la BDD (à supprimer)
 int callback(void *NotUsed, int argc, char **argv, char **azColName) {
     for (int i = 0; i < argc; i++) {
         printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
