@@ -12,11 +12,11 @@ static void activate_Entreprise(GtkApplication *app, gpointer user_data);
 
 GtkWidget *create_menu_window(GtkApplication *app);
 GtkWidget *create_login_window(GtkApplication *app);
-GtkWidget *create_Entreprise_form(GtkApplication *app);
+GtkWidget *create_form(GtkApplication *app, const char *form_title, const char *Website_Type, int num_elements);
 
 GtkWidget *login_window = NULL;
 GtkWidget *menu_window = NULL;
-GtkWidget *entreprise_form= NULL;
+GtkWidget *form_window= NULL;
 
 GtkApplication *app;
 
@@ -234,9 +234,9 @@ void generate_Personal_Blog(const char *blog_title, const char *blog_description
 void on_dialog_response(GtkDialog *dialog, gint response_id, gpointer user_data) {
     g_print("Réponse du bouton : %d\n", response_id);
     gtk_widget_destroy(GTK_WIDGET(dialog));  
-        if (entreprise_form != NULL) {
-        gtk_widget_destroy(entreprise_form);
-        entreprise_form = NULL;  
+        if (form_window != NULL) {
+        gtk_widget_destroy(form_window);
+        form_window = NULL;  
         activate_menu(app,NULL);
     }
 }
@@ -282,7 +282,7 @@ void save_entreprise_website(GtkWidget *button, GtkWidget **entries) {
             printf("Entreprise ajoutée avec succès.\n");
 
             // Création d'une fenêtre de dialogue
-            GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(entreprise_form),GTK_DIALOG_DESTROY_WITH_PARENT,
+            GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(form_window),GTK_DIALOG_DESTROY_WITH_PARENT,
             GTK_MESSAGE_INFO,GTK_BUTTONS_OK,"Site Successfully Registered");
             g_signal_connect_swapped(G_OBJECT(dialog), "response", G_CALLBACK(on_dialog_response), NULL);
             gint result = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -299,24 +299,29 @@ void save_entreprise_website(GtkWidget *button, GtkWidget **entries) {
 }
 
 //Fonction qui créée le formulaire de personnalisation du template de site d'entreprise
-GtkWidget *create_Entreprise_form(GtkApplication *app) {
-    GtkWidget *entreprise_form = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(entreprise_form), "Entreprise_Website");
-    gtk_window_set_default_size(GTK_WINDOW(entreprise_form), 1280, 720);
-    g_signal_connect(entreprise_form, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+GtkWidget *create_form(GtkApplication *app, const char *form_title, const char *Website_Type, int num_elements) {
+    GtkWidget *custom_form = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_title(GTK_WINDOW(custom_form), form_title);
+    gtk_window_set_default_size(GTK_WINDOW(custom_form), 1280, 720);
+    g_signal_connect(custom_form, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
     GtkWidget *grid = gtk_grid_new();
-    gtk_container_add(GTK_CONTAINER(entreprise_form), grid);
+    gtk_container_add(GTK_CONTAINER(custom_form), grid);
 
     // Ajouter le libellé du titre
-    GtkWidget *titleLabel = gtk_label_new("Create your own entreprise website");
+    GtkWidget *titleLabel = gtk_label_new(form_title);
     PangoFontDescription *titleFontDesc = pango_font_description_from_string("Sans Bold 18");
     gtk_widget_override_font(titleLabel, titleFontDesc);
     gtk_widget_set_halign(titleLabel, GTK_ALIGN_CENTER);
     gtk_grid_attach(GTK_GRID(grid), titleLabel, 0, 0, 2, 1);
     pango_font_description_free(titleFontDesc);
 
-    const char *parameters[] = {
+    const char **parameters;
+    const char **default_texts;
+
+    //On définit les paramètres et les entrées par défaut selon le type de site:
+    if (strcmp(Website_Type, "Entreprise") == 0) {
+        parameters = (const char *[]){
         "Name", "About Us", "Slogan", "Contact",
         "Service 1 Name", "Service 1 Description",
         "Service 2 Name", "Service 2 Description",
@@ -326,21 +331,26 @@ GtkWidget *create_Entreprise_form(GtkApplication *app) {
         "Footer Text Color", "Hero BG Color"
     };
 
-    // Créer un tableau de widgets pour stocker les zones de texte
-    GtkWidget **entries = malloc(G_N_ELEMENTS(parameters) * sizeof(GtkWidget *));
-
-    const char *default_texts[] = {
-        "Nom de l'Entreprise","Une brève description de l'entreprise et de son histoire", "Un slogan pour l'entreprise","Adresse, numéro de téléphone, formulaire de contact, etc.",
-        "Service 1", "Description du service 1",
-        "Service 2", "Description du service 2",
-        "#000000 ", "Arial, sans-serif", 
+        default_texts = (const char *[]){
+        "Nom de l'Entreprise", "Une brève description de l'entreprise et de son histoire", 
+        "Un slogan pour l'entreprise", "Adresse, numéro de téléphone, formulaire de contact, etc.", 
+        "Service 1", "Description du service 1", 
+        "Service 2", "Description du service 2", 
+        "#f4f4f4", "Arial, sans-serif", 
         "#333", "#fff", "#fff", "#333", "#fff", "#f4f4f4"
     };
+    }
 
-    for (int i = 0; i < G_N_ELEMENTS(parameters); i++) {
+    // Créer un tableau de widgets pour stocker les zones de texte
+    GtkWidget **entries = malloc(num_elements * sizeof(GtkWidget *));
+
+    for (int i = 0; i < num_elements; i++) {
         GtkWidget *label = gtk_label_new(parameters[i]);
         GtkWidget *entry = gtk_entry_new();
         gtk_entry_set_text(GTK_ENTRY(entry), default_texts[i]);
+
+        printf("Nombre d'éléments dans parameters : %d\n", num_elements);
+        printf("%s",default_texts[i]);
 
         PangoFontDescription *font_desc = pango_font_description_from_string("Sans Bold 14");
         gtk_widget_override_font(label, font_desc);
@@ -374,12 +384,12 @@ GtkWidget *create_Entreprise_form(GtkApplication *app) {
     gtk_widget_set_size_request(submit_button, 2 * gtk_widget_get_allocated_width(submit_button), -1);
 
     // Ajouter le bouton au GtkGrid
-    gtk_grid_attach(GTK_GRID(grid), submit_button, 0, G_N_ELEMENTS(parameters) + 1, 2, 1);
+    gtk_grid_attach(GTK_GRID(grid), submit_button, 0, num_elements + 1, 2, 1);
 
     gtk_widget_set_halign(grid, GTK_ALIGN_CENTER);
     gtk_widget_set_valign(grid, GTK_ALIGN_CENTER);
 
-    return entreprise_form;
+    return custom_form;
 }
 
 GtkWidget *create_template_widget(const char *template_name) {
@@ -556,10 +566,10 @@ GtkWidget *create_login_window(GtkApplication *app) {
 }
 
 static void activate_Entreprise(GtkApplication *app, gpointer user_data) {
-    entreprise_form = create_Entreprise_form(app);
+    form_window = create_form(app,"Créez votre propre site d'entreprise","Entreprise",16);
 
-    gtk_widget_show_all(entreprise_form);
-    g_signal_connect(entreprise_form, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+    gtk_widget_show_all(form_window);
+    g_signal_connect(form_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
     // Fermer la fenêtre du menu
     if (menu_window != NULL) {
@@ -598,6 +608,15 @@ static void activate_menu(GtkApplication *app, gpointer user_data) {
     g_signal_connect(login_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 }
 
+
+int callback(void *NotUsed, int argc, char **argv, char **azColName) {
+    for (int i = 0; i < argc; i++) {
+        printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+    }
+    printf("\n");
+    return 0;
+}
+
 void initializeDatabase() {
     int status;
     char *errMsg = 0;
@@ -630,6 +649,28 @@ void initializeDatabase() {
             sqlite3_free(errMsg);
         } else {
             printf("Table Entreprise_Website créée avec succès.\n");
+        
+        const char *createTableBlog =
+            "CREATE TABLE IF NOT EXISTS Blog ("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+            "blog_title TEXT,"
+            "blog_description TEXT,"
+            "article1_title TEXT,"
+            "article1_date TEXT,"
+            "article1_content TEXT,"
+            "article2_title TEXT,"
+            "article2_date TEXT,"
+            "article2_content TEXT,"
+            "about_me TEXT,"
+            "contact_email TEXT"
+            ");";
+
+        if (sqlite3_exec(db, createTableBlog, 0, 0, &errMsg) != SQLITE_OK) {
+            fprintf(stderr, "Erreur lors de la création de la table : %s\n", errMsg);
+            sqlite3_free(errMsg);
+        } else {
+            printf("Table Blog créée avec succès.\n");
+        }
 
             // Ajouter le template à la table uniquement si elle est vide (et que le template n'existe donc pas déjà)
             const char *insertTemplateEntreprise =
@@ -647,9 +688,41 @@ void initializeDatabase() {
                 fprintf(stderr, "Erreur lors de l'insertion du tuple : %s\n", errMsg);
                 sqlite3_free(errMsg);
             } else {
-                printf("Tuple ajouté avec succès.\n");
+                printf("Template de l'entreprise ajouté avec succès.\n");
             }
         }
+        // Ajouter le template à la table uniquement si elle est vide (et que le template n'existe donc pas déjà)
+            const char *insertTemplateBlog =
+                "INSERT INTO Blog (blog_title, blog_description, "
+                "article1_title, article1_date, article1_content, "
+                "article2_title, article2_date, article2_content, "
+                "about_me, contact_email) "
+                "SELECT "
+                "'Titre du blog', 'Description du blog', "
+                "'Titre de l''article 1', '2024-01-01', 'Contenu de l''article 1...', "
+                "'Titre de l''article 2', '2024-01-02', 'Contenu de l''article 2...', "
+                "'À propos de moi', 'contact@monblog.com' "
+                "WHERE NOT EXISTS (SELECT 1 FROM Blog LIMIT 1)";
+
+            if (sqlite3_exec(db, insertTemplateBlog, 0, 0, &errMsg) != SQLITE_OK) {
+                fprintf(stderr, "Erreur lors de l'insertion du tuple : %s\n", errMsg);
+                sqlite3_free(errMsg);
+            } else {
+                printf("Template du blog ajouté avec succès.\n");
+            }
+
+    //test pour voir l'état de la BDD
+    const char *selectQuery = "SELECT * FROM Entreprise_Website";
+
+    int rc;
+    rc = sqlite3_exec(db, selectQuery, callback, 0, &errMsg);
+
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Erreur lors de la sélection des données : %s\n", errMsg);
+        sqlite3_free(errMsg);
+    }
+    
+    //Fin du test
 
         // Fermer la base de données
         sqlite3_close(db);
