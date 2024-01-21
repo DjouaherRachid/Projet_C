@@ -247,6 +247,63 @@ void on_dialog_response(GtkDialog *dialog, gint response_id, gpointer user_data)
     }
 }
 
+void save_blog(GtkWidget *button, GtkWidget **entries) {
+    const char *values[10];
+
+    for (int i = 0; i < 10; i++) {
+        if (GTK_IS_ENTRY(entries[i])) {
+            const gchar *entry_text = gtk_entry_get_text(GTK_ENTRY(entries[i]));
+            values[i] = entry_text;
+            g_print("Entry %d Text: %s \n", i, values[i]);
+        } else {
+            g_print("L'élément %d n'est pas un GtkEntry\n", i);
+        }
+    }
+    free(entries);
+
+    // Génération du code html/css:
+    generate_Personal_Blog(values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7],
+                                values[8], values[9]);
+
+    // Ouvrir la base de données
+    sqlite3 *db;
+    if (sqlite3_open("DataBase.db", &db) == SQLITE_OK) {
+        printf("BDD ouverte correctement \n");
+
+        // Construction de la requête avec sqlite3_mprintf
+        const char *insertQuery = sqlite3_mprintf(
+            "INSERT INTO Blog (blog_title, blog_description, "
+            "article1_title, article1_date, article1_content, "
+            "article2_title, article2_date, article2_content, "
+            "about_me, contact_email) "
+            "VALUES ('%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q');",
+            values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7],
+            values[8], values[9]);
+
+        // Exécuter la requête préparée
+        int result = sqlite3_exec(db, insertQuery, 0, 0, 0);
+        if (result != SQLITE_OK) {
+            fprintf(stderr, "Erreur lors de l'insertion dans la table : %s\n", sqlite3_errmsg(db));
+        } else {
+            printf("Blog ajouté avec succès.\n");
+
+            // Création d'une fenêtre de dialogue
+            GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(form_window),GTK_DIALOG_DESTROY_WITH_PARENT,
+            GTK_MESSAGE_INFO,GTK_BUTTONS_OK,"Site Successfully Registered");
+            g_signal_connect_swapped(G_OBJECT(dialog), "response", G_CALLBACK(on_dialog_response), NULL);
+            gint result = gtk_dialog_run(GTK_DIALOG(dialog));
+
+            // Ajout d'un message de débogage supplémentaire
+            printf("Après l'insertion.\n");
+        }
+
+        // Fermer la base de données
+        sqlite3_close(db);
+    } else {
+        fprintf(stderr, "Impossible d'ouvrir la base de données.\n");
+    }
+}
+
 void save_entreprise_website(GtkWidget *button, GtkWidget **entries) {
     const char *values[16];
 
@@ -306,6 +363,8 @@ void save_entreprise_website(GtkWidget *button, GtkWidget **entries) {
 
 //Fonction qui créée le formulaire de personnalisation du template de site d'entreprise
 GtkWidget *create_form(GtkApplication *app, const char *form_title, const char *Website_Type, int num_elements) {
+    //le int type servira à définir le type de template pour attribuer la fonction callback appropriée au bouton enregistré
+    int type;
     GtkWidget *custom_form = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(custom_form), form_title);
     gtk_window_set_default_size(GTK_WINDOW(custom_form), 1280, 720);
@@ -344,6 +403,7 @@ GtkWidget *create_form(GtkApplication *app, const char *form_title, const char *
         "#f4f4f4", "Arial, sans-serif", 
         "#333", "#fff", "#fff", "#333", "#fff", "#f4f4f4"
     };
+    type=1;
     }
 
     if (strcmp(Website_Type, "Blog") == 0) {
@@ -358,7 +418,9 @@ GtkWidget *create_form(GtkApplication *app, const char *form_title, const char *
         "Titre de l'article 1", "2024-01-01", "Contenu de l'article 1...",
         "Titre de l'article 2", "2024-01-02", "Contenu de l'article 2...",
         "À propos de moi", "contact@monblog.com"
-        };}
+        };
+        type=2;
+        }
 
     // Créer un tableau de widgets pour stocker les zones de texte
     GtkWidget **entries = malloc(num_elements * sizeof(GtkWidget *));
@@ -393,7 +455,14 @@ GtkWidget *create_form(GtkApplication *app, const char *form_title, const char *
 
     // Ajouter le bouton "Enregistrer" à la fin
     GtkWidget *submit_button = gtk_button_new_with_label("Enregistrer");
-    g_signal_connect(submit_button, "clicked", G_CALLBACK(save_entreprise_website), entries);
+    switch(type){
+    case 1:
+        g_signal_connect(submit_button, "clicked", G_CALLBACK(save_entreprise_website), entries);
+    break;
+    case 2:
+        g_signal_connect(submit_button, "clicked", G_CALLBACK(save_blog), entries);
+    break;
+    }
 
     // Ajouter de l'espace vertical entre le dernier champ et le bouton
     int vertical_spacing_button = 20;
