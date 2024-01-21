@@ -16,7 +16,9 @@ GtkWidget *create_Entreprise_form(GtkApplication *app);
 
 GtkWidget *login_window = NULL;
 GtkWidget *menu_window = NULL;
-GtkWidget *Entreprise_form= NULL;
+GtkWidget *entreprise_form= NULL;
+
+GtkApplication *app;
 
 sqlite3 *db;
 
@@ -32,115 +34,102 @@ void generate_Entreprise_Website(const char *name, const char *about, const char
     FILE *file = fopen("Generated.html", "w");
 
     if (file != NULL) {
-        fprintf(file, "<!DOCTYPE html>\n");
-        fprintf(file, "<html lang=\"en\">\n");
-        fprintf(file, "<head>\n");
-        fprintf(file, "<meta charset=\"UTF-8\">\n");
-        fprintf(file, "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n");
-        fprintf(file, "<title>%s</title>\n", name);
-        fprintf(file, "<style>\n");
-        fprintf(file, "body {\n");
-        fprintf(file, "    font-family: %s;\n", body_font_family);
-        fprintf(file, "    margin: 0;\n");
-        fprintf(file, "    padding: 0;\n");
-        fprintf(file, "    box-sizing: border-box;\n");
-        fprintf(file, "    color: %s;\n", body_color);
-        fprintf(file, "}\n");
-
-        fprintf(file, "header {\n");
-        fprintf(file, "    background-color: %s;\n", header_bg_color);
-        fprintf(file, "    color: %s;\n", header_text_color);
-        fprintf(file, "    padding: 10px;\n");
-        fprintf(file, "    text-align: center;\n");
-        fprintf(file, "}\n");
-
-        fprintf(file, "nav ul {\n");
-        fprintf(file, "    list-style: none;\n");
-        fprintf(file, "    margin: 0;\n");
-        fprintf(file, "    padding: 0;\n");
-        fprintf(file, "}\n");
-
-        fprintf(file, "nav li {\n");
-        fprintf(file, "    display: inline;\n");
-        fprintf(file, "    margin-right: 20px;\n");
-        fprintf(file, "}\n");
-
-        fprintf(file, "a {\n");
-        fprintf(file, "    text-decoration: none;\n");
-        fprintf(file, "    color: %s;\n", a_text_color);
-        fprintf(file, "}\n");
-
-        fprintf(file, "#hero {\n");
-        fprintf(file, "    background-color: %s;\n", hero_bg_color);
-        fprintf(file, "    padding: 50px;\n");
-        fprintf(file, "    text-align: center;\n");
-        fprintf(file, "}\n");
-
-        fprintf(file, "#services, #about, #contact {\n");
-        fprintf(file, "    padding: 50px;\n");
-        fprintf(file, "}\n");
-
-        fprintf(file, ".service {\n");
-        fprintf(file, "    margin-bottom: 20px;\n");
-        fprintf(file, "}\n");
-
-        fprintf(file, "footer {\n");
-        fprintf(file, "    background-color: %s;\n", footer_bg_color);
-        fprintf(file, "    color: %s;\n", footer_text_color);
-        fprintf(file, "    text-align: center;\n");
-        fprintf(file, "    padding: 10px;\n");
-        fprintf(file, "    position: fixed;\n");
-        fprintf(file, "    bottom: 0;\n");
-        fprintf(file, "    width: 100%%;\n");
-        fprintf(file, "}\n");
-
-        fprintf(file, "</style>\n");
-        fprintf(file, "</head>\n");
-        fprintf(file, "<body>\n");
-
-        fprintf(file, "<header>\n");
-        fprintf(file, "    <h1>%s</h1>\n", name);
-        fprintf(file, "    <nav>\n");
-        fprintf(file, "        <ul>\n");
-        fprintf(file, "            <li><a href=\"#services\">Nos Services</a></li>\n");
-        fprintf(file, "            <li><a href=\"#about\">À Propos</a></li>\n");
-        fprintf(file, "            <li><a href=\"#contact\">Contact</a></li>\n");
-        fprintf(file, "        </ul>\n");
-        fprintf(file, "    </nav>\n");
-        fprintf(file, "</header>\n");
-
-        fprintf(file, "<section id=\"hero\">\n");
-        fprintf(file, "    <h2>%s</h2>\n",slogan);
-        fprintf(file, "</section>\n");
-
-        fprintf(file, "<section id=\"services\">\n");
-        fprintf(file, "    <h2>Nos Services</h2>\n");
-        fprintf(file, "    <div class=\"service\">\n");
-        fprintf(file, "        <h3>%s</h3>\n", service1_name);
-        fprintf(file, "        <p>%s</p>\n", service1_description);
-        fprintf(file, "    </div>\n");
-        fprintf(file, "    <div class=\"service\">\n");
-        fprintf(file, "        <h3>%s</h3>\n", service2_name);
-        fprintf(file, "        <p>%s</p>\n", service2_description);
-        fprintf(file, "    </div>\n");
-        fprintf(file, "</section>\n");
-
-        fprintf(file, "<section id=\"about\">\n");
-        fprintf(file, "    <h2>À Propos de Nous</h2>\n");
-        fprintf(file, "    <p>%s</p>\n", about);
-        fprintf(file, "</section>\n");
-
-        fprintf(file, "<section id=\"contact\">\n");
-        fprintf(file, "    <h2>Contactez-nous</h2>\n");
-        fprintf(file, "    <p>%s</p>\n", contact);
-        fprintf(file, "</section>\n");
-
-        fprintf(file, "<footer>\n");
-        fprintf(file, "    <p>&copy; 2024 %s. Tous droits réservés.</p>\n", name);
-        fprintf(file, "</footer>\n");
-
-        fprintf(file, "</body>\n");
-        fprintf(file, "</html>\n");
+        fprintf(file, "<!DOCTYPE html>\n"
+                      "<html lang=\"en\">\n"
+                      "<head>\n"
+                      "<meta charset=\"UTF-8\">\n"
+                      "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+                      "<title>%s</title>\n"
+                      "<style>\n"
+                      "body {\n"
+                      "    font-family: %s;\n"
+                      "    margin: 0;\n"
+                      "    padding: 0;\n"
+                      "    box-sizing: border-box;\n"
+                      "    color: %s;\n"
+                      "}\n"
+                      "header {\n"
+                      "    background-color: %s;\n"
+                      "    color: %s;\n"
+                      "    padding: 10px;\n"
+                      "    text-align: center;\n"
+                      "}\n"
+                      "nav ul {\n"
+                      "    list-style: none;\n"
+                      "    margin: 0;\n"
+                      "    padding: 0;\n"
+                      "}\n"
+                      "nav li {\n"
+                      "    display: inline;\n"
+                      "    margin-right: 20px;\n"
+                      "}\n"
+                      "a {\n"
+                      "    text-decoration: none;\n"
+                      "    color: %s;\n"
+                      "}\n"
+                      "#hero {\n"
+                      "    background-color: %s;\n"
+                      "    padding: 50px;\n"
+                      "    text-align: center;\n"
+                      "}\n"
+                      "#services, #about, #contact {\n"
+                      "    padding: 50px;\n"
+                      "}\n"
+                      ".service {\n"
+                      "    margin-bottom: 20px;\n"
+                      "}\n"
+                      "footer {\n"
+                      "    background-color: %s;\n"
+                      "    color: %s;\n"
+                      "    text-align: center;\n"
+                      "    padding: 10px;\n"
+                      "    position: fixed;\n"
+                      "    bottom: 0;\n"
+                      "    width: 100%%;\n"
+                      "}\n"
+                      "</style>\n"
+                      "</head>\n"
+                      "<body>\n"
+                      "<header>\n"
+                      "    <h1>%s</h1>\n"
+                      "    <nav>\n"
+                      "        <ul>\n"
+                      "            <li><a href=\"#services\">Nos Services</a></li>\n"
+                      "            <li><a href=\"#about\">À Propos</a></li>\n"
+                      "            <li><a href=\"#contact\">Contact</a></li>\n"
+                      "        </ul>\n"
+                      "    </nav>\n"
+                      "</header>\n"
+                      "<section id=\"hero\">\n"
+                      "    <h2>%s</h2>\n"
+                      "</section>\n"
+                      "<section id=\"services\">\n"
+                      "    <h2>Nos Services</h2>\n"
+                      "    <div class=\"service\">\n"
+                      "        <h3>%s</h3>\n"
+                      "        <p>%s</p>\n"
+                      "    </div>\n"
+                      "    <div class=\"service\">\n"
+                      "        <h3>%s</h3>\n"
+                      "        <p>%s</p>\n"
+                      "    </div>\n"
+                      "</section>\n"
+                      "<section id=\"about\">\n"
+                      "    <h2>À Propos de Nous</h2>\n"
+                      "    <p>%s</p>\n"
+                      "</section>\n"
+                      "<section id=\"contact\">\n"
+                      "    <h2>Contactez-nous</h2>\n"
+                      "    <p>%s</p>\n"
+                      "</section>\n"
+                      "<footer>\n"
+                      "    <p>&copy; 2024 %s. Tous droits réservés.</p>\n"
+                      "</footer>\n"
+                      "</body>\n"
+                      "</html>\n", name, body_font_family, body_color, header_bg_color, header_text_color,
+                      a_text_color, hero_bg_color, footer_bg_color, footer_text_color, name, slogan,
+                      service1_name, service1_description, service2_name, service2_description,
+                      about, contact, name);
 
         fclose(file);
         printf("Fichier HTML généré avec succès : %s\n", "Generated.html");
@@ -149,6 +138,16 @@ void generate_Entreprise_Website(const char *name, const char *about, const char
     }
 }
 
+// Fonction de rappel pour le bouton "OK" après avoir ajouté un site à la BDD
+void on_dialog_response(GtkDialog *dialog, gint response_id, gpointer user_data) {
+    g_print("Réponse du bouton : %d\n", response_id);
+    gtk_widget_destroy(GTK_WIDGET(dialog));  
+        if (entreprise_form != NULL) {
+        gtk_widget_destroy(entreprise_form);
+        entreprise_form = NULL;  
+        activate_menu(app,NULL);
+    }
+}
 
 void save_entreprise_website(GtkWidget *button, GtkWidget **entries) {
     const char *values[16];
@@ -188,8 +187,14 @@ void save_entreprise_website(GtkWidget *button, GtkWidget **entries) {
         if (result != SQLITE_OK) {
             fprintf(stderr, "Erreur lors de l'insertion dans la table : %s\n", sqlite3_errmsg(db));
         } else {
-            show_message_dialog("Entreprise ajoutée à la BDD");
             printf("Entreprise ajoutée avec succès.\n");
+
+            // Création d'une fenêtre de dialogue
+            GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(entreprise_form),GTK_DIALOG_DESTROY_WITH_PARENT,
+            GTK_MESSAGE_INFO,GTK_BUTTONS_OK,"Site Successfully Registered");
+            g_signal_connect_swapped(G_OBJECT(dialog), "response", G_CALLBACK(on_dialog_response), NULL);
+            gint result = gtk_dialog_run(GTK_DIALOG(dialog));
+
             // Ajout d'un message de débogage supplémentaire
             printf("Après l'insertion.\n");
         }
@@ -203,13 +208,13 @@ void save_entreprise_website(GtkWidget *button, GtkWidget **entries) {
 
 //Fonction qui créée le formulaire de personnalisation du template de site d'entreprise
 GtkWidget *create_Entreprise_form(GtkApplication *app) {
-    GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(window), "Entreprise_Website");
-    gtk_window_set_default_size(GTK_WINDOW(window), 1280, 720);
-    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+    GtkWidget *entreprise_form = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_title(GTK_WINDOW(entreprise_form), "Entreprise_Website");
+    gtk_window_set_default_size(GTK_WINDOW(entreprise_form), 1280, 720);
+    g_signal_connect(entreprise_form, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
     GtkWidget *grid = gtk_grid_new();
-    gtk_container_add(GTK_CONTAINER(window), grid);
+    gtk_container_add(GTK_CONTAINER(entreprise_form), grid);
 
     // Ajouter le libellé du titre
     GtkWidget *titleLabel = gtk_label_new("Create your own entreprise website");
@@ -282,7 +287,7 @@ GtkWidget *create_Entreprise_form(GtkApplication *app) {
     gtk_widget_set_halign(grid, GTK_ALIGN_CENTER);
     gtk_widget_set_valign(grid, GTK_ALIGN_CENTER);
 
-    return window;
+    return entreprise_form;
 }
 
 GtkWidget *create_template_widget(const char *template_name) {
@@ -459,10 +464,10 @@ GtkWidget *create_login_window(GtkApplication *app) {
 }
 
 static void activate_Entreprise(GtkApplication *app, gpointer user_data) {
-    GtkWidget *Entreprise_window = create_Entreprise_form(app);
+    entreprise_form = create_Entreprise_form(app);
 
-    gtk_widget_show_all(Entreprise_window);
-    g_signal_connect(Entreprise_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+    gtk_widget_show_all(entreprise_form);
+    g_signal_connect(entreprise_form, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
     // Fermer la fenêtre du menu
     if (menu_window != NULL) {
@@ -471,7 +476,6 @@ static void activate_Entreprise(GtkApplication *app, gpointer user_data) {
     }
 
     gtk_main();
-    g_signal_connect(login_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 }
 
 //Procédure se lançant au démarrage de l'application
@@ -507,7 +511,7 @@ int main(int argc, char *argv[]) {
     char *errMsg = 0;
 
     // Initialiser GTK
-    GtkApplication *app = gtk_application_new("projet.c", G_APPLICATION_DEFAULT_FLAGS);
+    app = gtk_application_new("projet.c", G_APPLICATION_DEFAULT_FLAGS);
     g_signal_connect(app, "activate", G_CALLBACK(activate_menu), NULL);
 
     // Ouvrir la base de données (elle sera créée si elle n'existe pas)
