@@ -22,6 +22,12 @@ GtkApplication *app;
 
 sqlite3 *db;
 
+void openInChrome(const char *filename) {
+    char command[256];
+    snprintf(command, sizeof(command), "google-chrome %s", filename);
+    system(command);
+}
+
 //Les procédures qui générent les sites
 void generate_Entreprise_Website(const char *name, const char *about, const char *slogan, const char *contact,
                   const char *service1_name, const char *service1_description,
@@ -31,7 +37,10 @@ void generate_Entreprise_Website(const char *name, const char *about, const char
                   const char *a_text_color, const char *footer_bg_color,
                   const char *footer_text_color, const char *hero_bg_color) {
 
-    FILE *file = fopen("Generated.html", "w");
+    char filename[256]; 
+    snprintf(filename, sizeof(filename), "Generated_Websites/Entreprise_%s.html", name);
+    
+    FILE *file = fopen(filename, "w");
 
     if (file != NULL) {
         fprintf(file, "<!DOCTYPE html>\n"
@@ -137,6 +146,89 @@ void generate_Entreprise_Website(const char *name, const char *about, const char
         fprintf(stderr, "Erreur lors de l'ouverture du fichier HTML de sortie.\n");
     }
 }
+
+//Blog
+void generate_Personal_Blog(const char *blog_title, const char *blog_description,
+                            const char *article1_title, const char *article1_date, const char *article1_content,
+                            const char *article2_title, const char *article2_date, const char *article2_content,
+                            const char *about_me, const char *contact_email) {
+
+    char filename[256];
+    snprintf(filename, sizeof(filename), "Generated_Websites/Blog_%s.html", blog_title);
+
+    FILE *file = fopen(filename, "w");
+
+    if (file != NULL) {
+        fprintf(file,
+                "<!DOCTYPE html>\n"
+                "<html lang=\"en\">\n"
+                "<head>\n"
+                "<meta charset=\"UTF-8\">\n"
+                "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+                "<style>\n"
+                "body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; box-sizing: border-box; background-color: #f5f5f5; color: #333; }\n"
+                "header { background-color: #4285f4; color: #fff; padding: 20px; text-align: center; }\n"
+                "nav ul { list-style: none; margin: 0; padding: 0; }\n"
+                "nav li { display: inline; margin-right: 20px; }\n"
+                "a { text-decoration: none; color: #4285f4; }\n"
+                "article { background-color: #fff; margin: 20px; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }\n"
+                "article h2 { color: #4285f4; }\n"
+                "article p { color: #666; }\n"
+                "section { padding: 40px; }\n"
+                "footer { background-color: #333; color: #fff; text-align: center; padding: 10px; }\n"
+                "</style>\n"
+                "<title>%s</title>\n"
+                "</head>\n"
+                "<body>\n"
+                "<header>\n"
+                "    <h1>%s</h1>\n"
+                "    <p>%s</p>\n"
+                "</header>\n"
+                "<nav>\n"
+                "    <ul>\n"
+                "        <li><a href=\"#accueil\">Accueil</a></li>\n"
+                "        <li><a href=\"#articles\">Articles</a></li>\n"
+                "        <li><a href=\"#a-propos\">À Propos</a></li>\n"
+                "        <li><a href=\"#contact\">Contact</a></li>\n"
+                "    </ul>\n"
+                "</nav>\n"
+                "<section id=\"accueil\">\n"
+                "    <article>\n"
+                "        <h2>%s</h2>\n"
+                "        <p>Date de publication: %s</p>\n"
+                "        <p>%s</p>\n"
+                "    </article>\n"
+                "    <article>\n"
+                "        <h2>%s</h2>\n"
+                "        <p>Date de publication: %s</p>\n"
+                "        <p>%s</p>\n"
+                "    </article>\n"
+                "</section>\n"
+                "<section id=\"a-propos\">\n"
+                "    <h2>À Propos de Moi</h2>\n"
+                "    <p>%s</p>\n"
+                "</section>\n"
+                "<section id=\"contact\">\n"
+                "    <h2>Contact</h2>\n"
+                "    <p>Vous pouvez me contacter à l'adresse email suivante : <a href=\"mailto:%s\">%s</a></p>\n"
+                "</section>\n"
+                "<footer>\n"
+                "    <p>&copy; 2024 %s. Tous droits réservés.</p>\n"
+                "</footer>\n"
+                "</body>\n"
+                "</html>\n",
+                blog_title, blog_title, blog_description,
+                article1_title, article1_date, article1_content,
+                article2_title, article2_date, article2_content,
+                about_me, contact_email, contact_email, blog_title);
+
+        fclose(file);
+        printf("Fichier HTML généré avec succès : %s\n", filename);
+    } else {
+        fprintf(stderr, "Erreur lors de l'ouverture du fichier HTML de sortie.\n");
+    }
+}
+
 
 // Fonction de rappel pour le bouton "OK" après avoir ajouté un site à la BDD
 void on_dialog_response(GtkDialog *dialog, gint response_id, gpointer user_data) {
@@ -506,13 +598,9 @@ static void activate_menu(GtkApplication *app, gpointer user_data) {
     g_signal_connect(login_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 }
 
-int main(int argc, char *argv[]) {
+void initializeDatabase() {
     int status;
     char *errMsg = 0;
-
-    // Initialiser GTK
-    app = gtk_application_new("projet.c", G_APPLICATION_DEFAULT_FLAGS);
-    g_signal_connect(app, "activate", G_CALLBACK(activate_menu), NULL);
 
     // Ouvrir la base de données (elle sera créée si elle n'existe pas)
     if (sqlite3_open("DataBase.db", &db) == SQLITE_OK) {
@@ -523,10 +611,10 @@ int main(int argc, char *argv[]) {
             "about_us TEXT,"
             "slogan TEXT,"
             "contact TEXT,"
-            "service1_name,"
-            "service1_description," 
-            "service2_name,"
-            "service2_description," 
+            "service1_name TEXT,"
+            "service1_description TEXT," 
+            "service2_name TEXT,"
+            "service2_description TEXT," 
             "body_color TEXT,"
             "body_font_family TEXT,"
             "header_bg_color TEXT,"
@@ -543,17 +631,17 @@ int main(int argc, char *argv[]) {
         } else {
             printf("Table Entreprise_Website créée avec succès.\n");
 
-        // Ajouter le template à la table uniquement si elle est vide (et que le template n'existe donc pas déjà)
-        const char *insertTemplateEntreprise =
-            "INSERT INTO Entreprise_Website (name, about_us, slogan, contact, "
-            "service1_name, service1_description, service2_name, service2_description, "
-            "body_color, body_font_family, header_bg_color, header_text_color, "
-            "a_text_color, footer_bg_color, footer_text_color, hero_bg_color) "
-            "SELECT 'Nom de l''Entreprise', 'Une brève description de l''entreprise et de son histoire', "
-            "'Un slogan pour l''entreprise', 'Adresse, numéro de téléphone, formulaire de contact, etc.', "
-            "'Service 1', 'Description du service 1', 'Service 2', 'Description du service 2', "
-            "'#f4f4f4', 'Arial, sans-serif', '#333', '#fff', '#fff', '#333', '#fff', '#f4f4f4' "
-            "WHERE NOT EXISTS (SELECT 1 FROM Entreprise_Website LIMIT 1)";
+            // Ajouter le template à la table uniquement si elle est vide (et que le template n'existe donc pas déjà)
+            const char *insertTemplateEntreprise =
+                "INSERT INTO Entreprise_Website (name, about_us, slogan, contact, "
+                "service1_name, service1_description, service2_name, service2_description, "
+                "body_color, body_font_family, header_bg_color, header_text_color, "
+                "a_text_color, footer_bg_color, footer_text_color, hero_bg_color) "
+                "SELECT 'Nom de l''Entreprise', 'Une brève description de l''entreprise et de son histoire', "
+                "'Un slogan pour l''entreprise', 'Adresse, numéro de téléphone, formulaire de contact, etc.', "
+                "'Service 1', 'Description du service 1', 'Service 2', 'Description du service 2', "
+                "'#f4f4f4', 'Arial, sans-serif', '#333', '#fff', '#fff', '#333', '#fff', '#f4f4f4' "
+                "WHERE NOT EXISTS (SELECT 1 FROM Entreprise_Website LIMIT 1)";
 
             if (sqlite3_exec(db, insertTemplateEntreprise, 0, 0, &errMsg) != SQLITE_OK) {
                 fprintf(stderr, "Erreur lors de l'insertion du tuple : %s\n", errMsg);
@@ -568,6 +656,18 @@ int main(int argc, char *argv[]) {
     } else {
         fprintf(stderr, "Impossible d'ouvrir la base de données.\n");
     }
+}
+
+int main(int argc, char *argv[]) {
+    int status;
+
+    // Initialiser GTK
+    gtk_init(&argc, &argv);
+    app = gtk_application_new("projet.c", G_APPLICATION_DEFAULT_FLAGS);
+    g_signal_connect(app, "activate", G_CALLBACK(activate_menu), NULL);
+
+    // Initialiser la base de données
+    initializeDatabase();
 
     // Exécuter l'application GTK
     status = g_application_run(G_APPLICATION(app), argc, argv);
@@ -575,4 +675,3 @@ int main(int argc, char *argv[]) {
 
     return status;
 }
-
