@@ -1370,7 +1370,7 @@ void initializeDatabase() {
     int status;
     char *errMsg = 0;
 
-    // Ouvrir la base de données (elle sera créée si elle n'existe pas)
+    //Table entreprise et template
     if (sqlite3_open("DataBase.db", &db) == SQLITE_OK) {
         const char *createTableEntreprise =
             "CREATE TABLE IF NOT EXISTS Entreprise_Website ("
@@ -1398,6 +1398,25 @@ void initializeDatabase() {
             sqlite3_free(errMsg);
         } else {
             printf("Table Entreprise_Website créée avec succès.\n");
+            // Ajouter le template à la table uniquement si elle est vide (et que le template n'existe donc pas déjà)
+            const char *insertTemplateEntreprise =
+                "INSERT INTO Entreprise_Website (name, about_us, slogan, contact, "
+                "service1_name, service1_description, service2_name, service2_description, "
+                "body_color, body_font_family, header_bg_color, header_text_color, "
+                "a_text_color, footer_bg_color, footer_text_color, hero_bg_color) "
+                "SELECT 'Nom de l''Entreprise', 'Une brève description de l''entreprise et de son histoire', "
+                "'Un slogan pour l''entreprise', 'Adresse, numéro de téléphone, formulaire de contact, etc.', "
+                "'Service 1', 'Description du service 1', 'Service 2', 'Description du service 2', "
+                "'#f4f4f4', 'Arial, sans-serif', '#333', '#fff', '#fff', '#333', '#fff', '#f4f4f4' "
+                "WHERE NOT EXISTS (SELECT 1 FROM Entreprise_Website LIMIT 1)";
+
+            if (sqlite3_exec(db, insertTemplateEntreprise, 0, 0, &errMsg) != SQLITE_OK) {
+                fprintf(stderr, "Erreur lors de l'insertion du tuple : %s\n", errMsg);
+                sqlite3_free(errMsg);
+            } else {
+                printf("Template de l'entreprise ajouté avec succès.\n");
+            }
+        }
         
         const char *createTableBlog =
             "CREATE TABLE IF NOT EXISTS Blog ("
@@ -1420,6 +1439,26 @@ void initializeDatabase() {
         } else {
             printf("Table Blog créée avec succès.\n");
         }
+
+        // Ajouter le template à la table uniquement si elle est vide (et que le template n'existe donc pas déjà)
+            const char *insertTemplateBlog =
+                "INSERT INTO Blog (blog_title, blog_description, "
+                "article1_title, article1_date, article1_content, "
+                "article2_title, article2_date, article2_content, "
+                "about_me, contact_email) "
+                "SELECT "
+                "'Titre du blog', 'Description du blog', "
+                "'Titre de l''article 1', '2024-01-01', 'Contenu de l''article 1...', "
+                "'Titre de l''article 2', '2024-01-02', 'Contenu de l''article 2...', "
+                "'À propos de moi', 'contact@monblog.com' "
+                "WHERE NOT EXISTS (SELECT 1 FROM Blog LIMIT 1)";
+
+            if (sqlite3_exec(db, insertTemplateBlog, 0, 0, &errMsg) != SQLITE_OK) {
+                fprintf(stderr, "Erreur lors de l'insertion du tuple : %s\n", errMsg);
+                sqlite3_free(errMsg);
+            } else {
+                printf("Template du blog ajouté avec succès.\n");
+            } 
 
          const char *createTableCommerce =
             "CREATE TABLE IF NOT EXISTS ECommerce_Website ("
@@ -1451,6 +1490,31 @@ void initializeDatabase() {
             printf("Table Commerce créée avec succès.\n");
         }
 
+        const char *insertTemplateECommerceSite =
+                "INSERT INTO ECommerce_Website (site_name, site_description, "
+                "header_title, header_description, "
+                "product1_title, product1_description, product1_price, "
+                "product2_title, product2_description, product2_price, "
+                "product3_title, product3_description, product3_price, "
+                "product4_title, product4_description, product4_price, "
+                "contact_email, footer_text) "
+                "SELECT "
+                "'Nom du site', 'Description du site', "
+                "'Titre de l''en-tête', 'Description de l''en-tête', "
+                "'Produit 1', 'Description du produit 1', '$19.99', "
+                "'Produit 2', 'Description du produit 2', '$29.99', "
+                "'Produit 3', 'Description du produit 3', '$24.99', "
+                "'Produit 4', 'Description du produit 4', '$39.99', "
+                "'contact@monsite.com', '© 2024 Mon Site d''E-commerce. Tous droits réservés.' "
+                "WHERE NOT EXISTS (SELECT 1 FROM ECommerce_Website LIMIT 1)";
+
+            if (sqlite3_exec(db, insertTemplateECommerceSite, 0, 0, &errMsg) != SQLITE_OK) {
+                fprintf(stderr, "Erreur lors de l'insertion du tuple : %s\n", errMsg);
+                sqlite3_free(errMsg);
+            } else {
+                printf("Template du site d'e-commerce ajouté avec succès.\n");
+            } 
+
         const char *createTableTravel =
             "CREATE TABLE IF NOT EXISTS Travel_Website ("
             "id INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -1478,92 +1542,18 @@ void initializeDatabase() {
             printf("Table Commerce créée avec succès.\n");
         }
 
-            // Ajouter le template à la table uniquement si elle est vide (et que le template n'existe donc pas déjà)
-            const char *insertTemplateEntreprise =
-                "INSERT INTO Entreprise_Website (name, about_us, slogan, contact, "
-                "service1_name, service1_description, service2_name, service2_description, "
-                "body_color, body_font_family, header_bg_color, header_text_color, "
-                "a_text_color, footer_bg_color, footer_text_color, hero_bg_color) "
-                "SELECT 'Nom de l''Entreprise', 'Une brève description de l''entreprise et de son histoire', "
-                "'Un slogan pour l''entreprise', 'Adresse, numéro de téléphone, formulaire de contact, etc.', "
-                "'Service 1', 'Description du service 1', 'Service 2', 'Description du service 2', "
-                "'#f4f4f4', 'Arial, sans-serif', '#333', '#fff', '#fff', '#333', '#fff', '#f4f4f4' "
-                "WHERE NOT EXISTS (SELECT 1 FROM Entreprise_Website LIMIT 1)";
-
-            if (sqlite3_exec(db, insertTemplateEntreprise, 0, 0, &errMsg) != SQLITE_OK) {
-                fprintf(stderr, "Erreur lors de l'insertion du tuple : %s\n", errMsg);
-                sqlite3_free(errMsg);
-            } else {
-                printf("Template de l'entreprise ajouté avec succès.\n");
-            }
-        }
-        // Ajouter le template à la table uniquement si elle est vide (et que le template n'existe donc pas déjà)
-            const char *insertTemplateBlog =
-                "INSERT INTO Blog (blog_title, blog_description, "
-                "article1_title, article1_date, article1_content, "
-                "article2_title, article2_date, article2_content, "
-                "about_me, contact_email) "
-                "SELECT "
-                "'Titre du blog', 'Description du blog', "
-                "'Titre de l''article 1', '2024-01-01', 'Contenu de l''article 1...', "
-                "'Titre de l''article 2', '2024-01-02', 'Contenu de l''article 2...', "
-                "'À propos de moi', 'contact@monblog.com' "
-                "WHERE NOT EXISTS (SELECT 1 FROM Blog LIMIT 1)";
-
-            if (sqlite3_exec(db, insertTemplateBlog, 0, 0, &errMsg) != SQLITE_OK) {
-                fprintf(stderr, "Erreur lors de l'insertion du tuple : %s\n", errMsg);
-                sqlite3_free(errMsg);
-            } else {
-                printf("Template du blog ajouté avec succès.\n");
-            } 
-
-            const char *insertTemplateECommerceSite =
-                "INSERT INTO ECommerce_Website (site_name, site_description, "
-                "header_title, header_description, "
-                "product1_title, product1_description, product1_price, "
-                "product2_title, product2_description, product2_price, "
-                "product3_title, product3_description, product3_price, "
-                "product4_title, product4_description, product4_price, "
-                "contact_email, footer_text) "
-                "SELECT "
-                "'Nom du site', 'Description du site', "
-                "'Titre de l''en-tête', 'Description de l''en-tête', "
-                "'Produit 1', 'Description du produit 1', '$19.99', "
-                "'Produit 2', 'Description du produit 2', '$29.99', "
-                "'Produit 3', 'Description du produit 3', '$24.99', "
-                "'Produit 4', 'Description du produit 4', '$39.99', "
-                "'contact@monsite.com', '© 2024 Mon Site d''E-commerce. Tous droits réservés.' "
-                "WHERE NOT EXISTS (SELECT 1 FROM ECommerce_Website LIMIT 1)";
-
-            if (sqlite3_exec(db, insertTemplateECommerceSite, 0, 0, &errMsg) != SQLITE_OK) {
-                fprintf(stderr, "Erreur lors de l'insertion du tuple : %s\n", errMsg);
-                sqlite3_free(errMsg);
-            } else {
-                printf("Template du site d'e-commerce ajouté avec succès.\n");
-            } 
-
             const char *insertTemplateTravel =
-                "INSERT INTO Travel_Website ("
-                "name, slogan, about_us,"
-                "header_title, header_description,"
-                "destination_title, destination_image, destination_description,"
-                "special_offer_title, special_offer_image, special_offer_description,"
-                "contact_email, footer_text)"
-                "SELECT"
-                "'Nom de l''Agence',"
-                "'Votre prochaine aventure commence ici.',"
-                "'Découvrez des destinations extraordinaires et vivez des expériences inoubliables.',"
-                "'Explorez le Monde',"
-                "'Découvrez des destinations extraordinaires et vivez des expériences inoubliables.',"
-                "'Tokyo, Japon',"
-                "'tokyo.jpg',"
-                "'Explorez la modernité et la tradition dans la capitale du Japon.',"
-                "'Voyage tout compris à Bali',"
-                "'bali.jpg',"
-                "'Profitez de plages paradisiaques et d''une expérience culturelle unique.',"
-                "'info@agencedevoyage.com',"
-                "'&copy; 2024 Agence de Voyage. Tous droits réservés.'"
-                "WHERE NOT EXISTS (SELECT 1 FROM Travel_Website LIMIT 1);"
+            "INSERT INTO Travel_Website (name, slogan, about_us, header_title, header_description, destination_title,"
+            "destination_image, destination_description, special_offer_title, special_offer_image, special_offer_description," 
+            "contact_email, footer_text)"
+            "SELECT "
+            "'Nom de l''Agence', 'Votre prochaine aventure commence ici.', "
+            "'Découvrez des destinations extraordinaires et vivez des expériences inoubliables.', 'Explorez le Monde',"
+            "'Découvrez des destinations extraordinaires et vivez des expériences inoubliables.', 'Tokyo, Japon', 'tokyo.jpg',"
+            "'Explorez la modernité et la tradition dans la capitale du Japon.', 'Voyage tout compris à Bali', 'bali.jpg',"
+            "'Profitez de plages paradisiaques et d''une expérience culturelle unique.', 'info@agencedevoyage.com', "
+            "'&copy; 2024 Agence de Voyage. Tous droits réservés.'"
+            "WHERE NOT EXISTS (SELECT 1 FROM Travel_Website LIMIT 1);"
             ;
 
             if (sqlite3_exec(db, insertTemplateTravel, 0, 0, &errMsg) != SQLITE_OK) {
@@ -1573,8 +1563,48 @@ void initializeDatabase() {
                 printf("Template du site de l'agence de voyage ajouté avec succès.\n");
             } 
 
+    const char *createTableCV =
+        "CREATE TABLE IF NOT EXISTS CV_Website ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "name TEXT,"
+        "email TEXT,"
+        "phone TEXT,"
+        "linkedin TEXT,"
+        "job_title TEXT,"
+        "company TEXT,"
+        "job_date TEXT,"
+        "job_description TEXT,"
+        "education TEXT,"
+        "education_date TEXT,"
+        "skills TEXT,"
+        "download_link TEXT"
+        ");";
+
+        if (sqlite3_exec(db, createTableCV, 0, 0, &errMsg) != SQLITE_OK) {
+            fprintf(stderr, "Erreur lors de la création de la table CV_Website : %s\n", errMsg);
+            sqlite3_free(errMsg);
+        } else {
+            printf("Table Commerce créée avec succès.\n");
+        }
+
+        const char *insertTemplateCV =
+            "INSERT INTO CV_Website ("
+            "name, email, phone, linkedin, job_title, company, job_date, job_description, education, education_date, skills, download_link)"
+            "SELECT "
+            "'Nom Prénom', 'email@example.com', '+123456789', 'linkedin.com/in/nom', 'Titre du poste', 'Nom de l''entreprise', 'Date du travail', 'Description du travail', 'Nom de l''école', 'Date d''obtention', 'Compétences clés', 'lien_de_téléchargement.pdf'"
+            "WHERE NOT EXISTS (SELECT 1 FROM CV_Website LIMIT 1);";
+
+
+            if (sqlite3_exec(db, insertTemplateCV, 0, 0, &errMsg) != SQLITE_OK) {
+                fprintf(stderr, "Erreur lors de l'insertion du tuple template travel: %s\n", errMsg);
+                sqlite3_free(errMsg);
+            } else {
+                printf("Template du CVajouté avec succès.\n");
+            } 
+
+        
     //test pour voir l'état de la BDD (à supprimer)
-    const char *selectQuery = "SELECT * FROM Travel_Website";
+    const char *selectQuery = "SELECT * FROM CV_Website";
 
     int rc;
     rc = sqlite3_exec(db, selectQuery, callback, 0, &errMsg);
@@ -1583,8 +1613,8 @@ void initializeDatabase() {
         fprintf(stderr, "Erreur lors de la sélection des données : %s\n", errMsg);
         sqlite3_free(errMsg);
     }
-    
-    //Fin du test
+    //fin du test
+
         // Fermer la base de données
         sqlite3_close(db);
     } else {
@@ -1593,35 +1623,6 @@ void initializeDatabase() {
 }
 
 int main(int argc, char *argv[]) {
-    /*
-    generate_CV("Djouaher Rachid",
-                "john.doe@example.com",
-                "123-456-7890",
-                "linkedin.com/in/johndoe",
-                "Développeur Web",
-                "ABC Company",
-                "Janvier 2020 - Présent",
-                "Travailleur acharné sur des projets passionnants.",
-                "Baccalauréat en Informatique",
-                "Mai 2018",
-                "HTML, CSS, JavaScript, C++",
-                "lien_de_telechargement_du_CV.html");
-    */
-    generate_Travel_Website(
-        "Bonjour",               // Nom du site
-        "Explorez le monde avec nous",// Slogan
-        "Nous sommes une agence de voyage passionnée par la découverte de nouveaux horizons.", // À propos de nous
-        "Destination exotique",       // Titre de la destination
-        "destination_image.jpg",      // Image de la destination
-        "Découvrez une destination exotique avec des plages magnifiques et une culture unique.", // Description de la destination
-        "Offre spéciale de l'été",    // Titre de l'offre spéciale
-        "special_offer_image.jpg",    // Image de l'offre spéciale
-        "Réservez maintenant et profitez de réductions exceptionnelles sur nos forfaits vacances.", // Description de l'offre spéciale
-        "contact@mytravelsite.com",   // Email de contact
-        "© 2024 My Travel Site"       // Texte du pied de page
-    );
-
-
     int status;
     // Initialiser GTK
     gtk_init(&argc, &argv);
