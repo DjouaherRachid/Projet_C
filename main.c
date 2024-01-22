@@ -14,24 +14,48 @@ static void activate_Commerce(GtkApplication *app, gpointer user_data);
 static void activate_Travel(GtkApplication *app, gpointer user_data);
 static void activate_CV(GtkApplication *app, gpointer user_data);
 
+//Protoypes des procédures créant les codes HTML
+void generate_Entreprise_Website(const char *name, const char *about, const char *slogan, const char *contact,
+                  const char *service1_name, const char *service1_description,
+                  const char *service2_name, const char *service2_description,
+                  const char *body_color, const char *body_font_family,
+                  const char *header_bg_color, const char *header_text_color,
+                  const char *a_text_color, const char *footer_bg_color,
+                  const char *footer_text_color, const char *hero_bg_color);
+void generate_Personal_Blog(const char *blog_title, const char *blog_description,
+                            const char *article1_title, const char *article1_date, const char *article1_content,
+                            const char *article2_title, const char *article2_date, const char *article2_content,
+                            const char *about_me, const char *contact_email);
+void generate_ECommerce_Site(const char *site_name, const char *site_description,
+                            const char *header_title, const char *header_description,
+                            const char *product1_title, const char *product1_description, const char *product1_price,
+                            const char *product2_title, const char *product2_description, const char *product2_price,
+                            const char *product3_title, const char *product3_description, const char *product3_price,
+                            const char *product4_title, const char *product4_description, const char *product4_price,
+                            const char *contact_email, const char *footer_text);
+void generate_Travel_Website(const char *name, const char *slogan, const char *about_us,
+                             const char *header_title, const char *header_description,
+                             const char *destination_title, const char *destination_image, const char *destination_description,
+                             const char *special_offer_title, const char *special_offer_image, const char *special_offer_description,
+                             const char *contact_email, const char *footer_text);
+void generate_CV(const char *name, const char *email, const char *phone, const char *linkedin, const char *job_title,
+                 const char *company, const char *job_date, const char *job_description,
+                 const char *education, const char *education_date,
+                 const char *skills, const char *download_link);
+
+//Prototypes des fonctions créant les différentes fenêtres du projets.
 GtkWidget *create_menu_window(GtkApplication *app);
 GtkWidget *create_login_window(GtkApplication *app);
 GtkWidget *create_form(GtkApplication *app, const char *form_title, const char *Website_Type, int num_elements);
 
+//Les différentes fenêtres du projet
 GtkWidget *login_window = NULL;
 GtkWidget *menu_window = NULL;
 GtkWidget *form_window= NULL;
 
-
 GtkApplication *app;
 
 sqlite3 *db;
-
-void openInChrome(const char *filename) {
-    char command[256];
-    snprintf(command, sizeof(command), "google-chrome %s", filename);
-    system(command);
-}
 
 //Les procédures qui générent les sites
 void generate_Entreprise_Website(const char *name, const char *about, const char *slogan, const char *contact,
@@ -337,6 +361,7 @@ void generate_ECommerce_Site(const char *site_name, const char *site_description
 }
 
 void generate_Travel_Website(const char *name, const char *slogan, const char *about_us,
+                             const char *header_title, const char *header_description,
                              const char *destination_title, const char *destination_image, const char *destination_description,
                              const char *special_offer_title, const char *special_offer_image, const char *special_offer_description,
                              const char *contact_email, const char *footer_text) {
@@ -414,7 +439,7 @@ void generate_Travel_Website(const char *name, const char *slogan, const char *a
                                "            padding: 10px;\n"
                                "        }\n"
                                "    </style>\n"
-                               "</head>\n");
+                               "</head>\n", header_title);
 
         if (result < 0) {
             fprintf(stderr, "Erreur lors de l'écriture de la partie 2 dans le fichier HTML.\n");
@@ -476,7 +501,7 @@ void generate_Travel_Website(const char *name, const char *slogan, const char *a
                                "                <button>En savoir plus</button>\n"
                                "            </div>\n"
                                "        </section>\n",
-                               destination_title, destination_image,destination_image, destination_description);
+                               destination_title, destination_image, destination_image, destination_description);
 
         if (result < 0) {
             fprintf(stderr, "Erreur lors de l'écriture de la partie 6 dans le fichier HTML.\n");
@@ -543,6 +568,7 @@ void generate_Travel_Website(const char *name, const char *slogan, const char *a
     }
     printf("Fin de la génération du site Web de voyage.\n");
 }
+
 
 //Celui là est divisé en plusieurs sections 
 void generate_CV(const char *name, const char *email, const char *phone, const char *linkedin, const char *job_title,
@@ -739,6 +765,109 @@ void on_dialog_response(GtkDialog *dialog, gint response_id, gpointer user_data)
         gtk_widget_destroy(form_window);
         form_window = NULL;  
         activate_menu(app,NULL);
+    }
+}
+
+//Sauvergarder le template de CV
+void save_CV(GtkWidget *button, GtkWidget **entries) {
+    const char *values[12];
+
+    for (int i = 0; i < 12; i++) {
+        if (GTK_IS_ENTRY(entries[i])) {
+            const gchar *entry_text = gtk_entry_get_text(GTK_ENTRY(entries[i]));
+            values[i] = entry_text;
+            g_print("Entry %d Text: %s \n", i, values[i]);
+        } else {
+            g_print("L'élément %d n'est pas un GtkEntry\n", i);
+        }
+    }
+    free(entries);
+    // Génération du code html/css:
+    generate_CV(values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7],
+                                values[8], values[9], values[10], values[11]);
+    // Ouvrir la base de données
+    sqlite3 *db;
+    if (sqlite3_open("DataBase.db", &db) == SQLITE_OK) {
+        printf("BDD ouverte correctement \n");
+
+        // Construction de la requête avec sqlite3_mprintf
+        const char *insertQuery = sqlite3_mprintf(
+            "INSERT INTO CV_Website ("
+            "name, email, phone, linkedin, job_title, company, job_date, job_description, education, education_date, skills, download_link)"
+            "VALUES ('%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q');",
+            values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7],
+            values[8], values[9], values[10], values[11]);
+        // Exécuter la requête préparée
+        int result = sqlite3_exec(db, insertQuery, 0, 0, 0);
+        if (result != SQLITE_OK) {
+            fprintf(stderr, "Erreur lors de l'insertion dans la table : %s\n", sqlite3_errmsg(db));
+        } else {
+            printf("Template de CV ajouté avec succès.\n");
+            // Création d'une fenêtre de dialogue
+            GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(form_window),GTK_DIALOG_DESTROY_WITH_PARENT,
+            GTK_MESSAGE_INFO,GTK_BUTTONS_OK,"Site Successfully Registered");
+            g_signal_connect_swapped(G_OBJECT(dialog), "response", G_CALLBACK(on_dialog_response), NULL);
+            gint result = gtk_dialog_run(GTK_DIALOG(dialog));
+
+            // Ajout d'un message de débogage supplémentaire
+            printf("Après l'insertion.\n");
+        }
+        // Fermer la base de données
+        sqlite3_close(db);
+    } else {
+        fprintf(stderr, "Impossible d'ouvrir la base de données.\n");
+    }
+}
+
+//Sauvergarder le site d'agence de voyage en BDD
+void save_travel_website(GtkWidget *button, GtkWidget **entries) {
+    const char *values[13];
+
+    for (int i = 0; i < 13; i++) {
+        if (GTK_IS_ENTRY(entries[i])) {
+            const gchar *entry_text = gtk_entry_get_text(GTK_ENTRY(entries[i]));
+            values[i] = entry_text;
+            g_print("Entry %d Text: %s \n", i, values[i]);
+        } else {
+            g_print("L'élément %d n'est pas un GtkEntry\n", i);
+        }
+    }
+    free(entries);
+    // Génération du code html/css:
+    generate_Travel_Website(values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7],
+                                values[8], values[9], values[10], values[11], values[12]);
+    // Ouvrir la base de données
+    sqlite3 *db;
+    if (sqlite3_open("DataBase.db", &db) == SQLITE_OK) {
+        printf("BDD ouverte correctement \n");
+
+        // Construction de la requête avec sqlite3_mprintf
+        const char *insertQuery = sqlite3_mprintf(
+            "INSERT INTO Travel_Website (name, slogan, about_us, header_title, header_description, destination_title,"
+            "destination_image, destination_description, special_offer_title, special_offer_image, special_offer_description," 
+            "contact_email, footer_text)"
+            "VALUES ('%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q', '%q');",
+            values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7],
+            values[8], values[9], values[10], values[11], values[12]);
+        // Exécuter la requête préparée
+        int result = sqlite3_exec(db, insertQuery, 0, 0, 0);
+        if (result != SQLITE_OK) {
+            fprintf(stderr, "Erreur lors de l'insertion dans la table : %s\n", sqlite3_errmsg(db));
+        } else {
+            printf("Site d'agence de voyage ajoutée avec succès.\n");
+            // Création d'une fenêtre de dialogue
+            GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(form_window),GTK_DIALOG_DESTROY_WITH_PARENT,
+            GTK_MESSAGE_INFO,GTK_BUTTONS_OK,"Site Successfully Registered");
+            g_signal_connect_swapped(G_OBJECT(dialog), "response", G_CALLBACK(on_dialog_response), NULL);
+            gint result = gtk_dialog_run(GTK_DIALOG(dialog));
+
+            // Ajout d'un message de débogage supplémentaire
+            printf("Après l'insertion.\n");
+        }
+        // Fermer la base de données
+        sqlite3_close(db);
+    } else {
+        fprintf(stderr, "Impossible d'ouvrir la base de données.\n");
     }
 }
 
@@ -998,6 +1127,36 @@ GtkWidget *create_form(GtkApplication *app, const char *form_title, const char *
     };
     type=3;
     }
+    if (strcmp(Website_Type, "Travel_Agency") == 0){
+        parameters = (const char *[]){
+        "name", "slogan", "about_us", "header_title", "header_description",
+        "destination_title", "destination_image", "destination_description",
+        "special_offer_title", "special_offer_image", "special_offer_description",
+        "contact_email", "footer_text"
+    };
+        default_texts = (const char *[]){
+        "'Nom de l''Agence'", "'Votre prochaine aventure commence ici.'",
+        "'Découvrez des destinations extraordinaires et vivez des expériences inoubliables.'", "'Explorez le Monde'",
+        "'Découvrez des destinations extraordinaires et vivez des expériences inoubliables.'", "'Tokyo, Japon'", "'tokyo.jpg'",
+        "'Explorez la modernité et la tradition dans la capitale du Japon.'", "'Voyage tout compris à Bali'", "'bali.jpg'",
+        "'Profitez de plages paradisiaques et d''une expérience culturelle unique.'", "'info@agencedevoyage.com'",
+        "'&copy; 2024 Agence de Voyage. Tous droits réservés.'"
+    };
+    type=4;
+    }
+    if (strcmp(Website_Type, "CV") == 0){
+        parameters = (const char *[]){
+        "name", "email", "phone", "linkedin", "job_title", "company", "job_date",
+        "job_description", "education", "education_date", "skills", "download_link"
+    };
+
+        default_texts = (const char *[]){
+        "Nom Prénom", "email@example.com", "+123456789", "linkedin.com/in/nom",
+        "Titre du poste", "Nom de l'entreprise", "Date du travail", "Description du travail",
+        "Nom de l'école", "Date d'obtention", "Compétences clés", "lien_de_téléchargement.pdf"
+    };
+    type=5;
+    }
 
     // Créer un tableau de widgets pour stocker les zones de texte
     GtkWidget **entries = malloc(num_elements * sizeof(GtkWidget *));
@@ -1044,6 +1203,12 @@ GtkWidget *create_form(GtkApplication *app, const char *form_title, const char *
     case 3:
         g_signal_connect(submit_button, "clicked", G_CALLBACK(save_ecommerce), entries);
     break;
+    case 4:
+        g_signal_connect(submit_button, "clicked", G_CALLBACK(save_travel_website), entries);
+    break;
+    case 5:
+        g_signal_connect(submit_button, "clicked", G_CALLBACK(save_CV), entries);
+    break;
     }
 
     g_signal_connect(cancel_button, "clicked", G_CALLBACK(activate_menu), NULL);
@@ -1082,12 +1247,12 @@ GtkWidget *create_template_widget(const char *template_name) {
     
     if (strcmp(template_name, "Site d'e-commerce") == 0) 
     g_signal_connect(button, "clicked", G_CALLBACK(activate_Commerce), NULL);
-    /*
-    if (strcmp(template_name, "Site d'Agence de Voyage") == 0) 
+    
+    if (strcmp(template_name, "Agence de Voyage") == 0) 
     g_signal_connect(button, "clicked", G_CALLBACK(activate_Travel), NULL);
 
     if (strcmp(template_name, "Template de CV en Ligne") == 0) 
-    g_signal_connect(button, "clicked", G_CALLBACK(activate_CV), NULL);*/
+    g_signal_connect(button, "clicked", G_CALLBACK(activate_CV), NULL);
 
     gtk_box_pack_start(GTK_BOX(template_box), label, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(template_box), button, FALSE, FALSE, 0);
@@ -1167,7 +1332,7 @@ GtkWidget *create_menu_window(GtkApplication *app) {
                 gtk_grid_set_row_homogeneous(GTK_GRID(templates_box), TRUE);
 
                 // Tableau de noms de templates
-                const char *template_names[] = {"Site d'Entreprise", "Blog Personnel", "Site d'e-commerce", "Site d'Agence de Voyage", "Template de CV en Ligne"};
+                const char *template_names[] = {"Site d'Entreprise", "Blog Personnel", "Site d'e-commerce", "Agence de Voyage", "Template de CV en Ligne"};
 
                 // Ajouter les widgets de templates au conteneur avec une boucle
                 for (int j = 0; j < G_N_ELEMENTS(template_names); j++) {
@@ -1294,9 +1459,9 @@ static void activate_Commerce(GtkApplication *app, gpointer user_data){
     gtk_main();
 }
 
-/*
+
 static void activate_Travel(GtkApplication *app, gpointer user_data){
-    form_window = create_form(app,"Créez votre propre site d'entreprise","Entreprise",16);
+    form_window = create_form(app,"Créez votre propre site d'agence de voyage","Travel_Agency",13);
 
     gtk_widget_show_all(form_window);
     g_signal_connect(form_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
@@ -1311,7 +1476,7 @@ static void activate_Travel(GtkApplication *app, gpointer user_data){
 }
 
 static void activate_CV(GtkApplication *app, gpointer user_data){
-    form_window = create_form(app,"Créez votre propre site d'entreprise","Entreprise",16);
+    form_window = create_form(app,"Créez un CV personnalisé","CV",12);
 
     gtk_widget_show_all(form_window);
     g_signal_connect(form_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
@@ -1323,7 +1488,7 @@ static void activate_CV(GtkApplication *app, gpointer user_data){
     }
 
     gtk_main();
-}*/
+}
 
 //Procédure censée se lancer lorsque l'utilisateur appuie sur connexion et ouvrant le menu
 static void activate_menu(GtkApplication *app, gpointer user_data) {
@@ -1623,6 +1788,13 @@ void initializeDatabase() {
 }
 
 int main(int argc, char *argv[]) {
+    generate_Travel_Website("Nom de l'Agence", "Votre prochaine aventure commence ici.", "Découvrez des destinations extraordinaires et vivez des expériences inoubliables.",
+                        "Explorez le Monde", "Découvrez des destinations extraordinaires et vivez des expériences inoubliables.", "Tokyo, Japon", "tokyo.jpg",
+                        "Explorez la modernité et la tradition dans la capitale du Japon.", "Voyage tout compris à Bali", "bali.jpg",
+                        "Profitez de plages paradisiaques et d'une expérience culturelle unique.", "info@agencedevoyage.com",
+                        "&copy; 2024 Agence de Voyage. Tous droits réservés.");
+
+
     int status;
     // Initialiser GTK
     gtk_init(&argc, &argv);
