@@ -11,10 +11,8 @@ static void activate_menu(GtkApplication *app, gpointer user_data);
 static void activate_Entreprise(GtkApplication *app, gpointer user_data);
 static void activate_Blog(GtkApplication *app, gpointer user_data);
 static void activate_Commerce(GtkApplication *app, gpointer user_data);
-/*
 static void activate_Travel(GtkApplication *app, gpointer user_data);
 static void activate_CV(GtkApplication *app, gpointer user_data);
-*/
 
 GtkWidget *create_menu_window(GtkApplication *app);
 GtkWidget *create_login_window(GtkApplication *app);
@@ -23,6 +21,7 @@ GtkWidget *create_form(GtkApplication *app, const char *form_title, const char *
 GtkWidget *login_window = NULL;
 GtkWidget *menu_window = NULL;
 GtkWidget *form_window= NULL;
+
 
 GtkApplication *app;
 
@@ -42,7 +41,6 @@ void generate_Entreprise_Website(const char *name, const char *about, const char
                   const char *header_bg_color, const char *header_text_color,
                   const char *a_text_color, const char *footer_bg_color,
                   const char *footer_text_color, const char *hero_bg_color) {
-
     char filename[256]; 
     snprintf(filename, sizeof(filename), "Generated_Websites/Entreprise_%s.html", name);
     
@@ -334,6 +332,401 @@ void generate_ECommerce_Site(const char *site_name, const char *site_description
         fclose(file);
         printf("Fichier HTML généré avec succès : %s\n", filename);
     } else {
+        fprintf(stderr, "Erreur lors de l'ouverture du fichier HTML de sortie.\n");
+    }
+}
+
+void generate_Travel_Website(const char *name, const char *slogan, const char *about_us,
+                             const char *destination_title, const char *destination_image, const char *destination_description,
+                             const char *special_offer_title, const char *special_offer_image, const char *special_offer_description,
+                             const char *contact_email, const char *footer_text) {
+
+    printf("Début de la génération du site Web de voyage...\n");
+
+    char filename[256];
+    snprintf(filename, sizeof(filename), "Generated_Websites/Travel_%s.html", name);
+
+    FILE *file = fopen(filename, "w");
+
+    if (file != NULL) {
+        int result;
+
+        // Partie 1: Doctype et balise html
+        printf("Partie 1: Doctype et balise html\n");
+        result = fprintf(file, "<!DOCTYPE html>\n"
+                               "<html lang=\"en\">\n");
+
+        if (result < 0) {
+            fprintf(stderr, "Erreur lors de l'écriture de la partie 1 dans le fichier HTML.\n");
+            fclose(file);
+            return;
+        }
+
+        // Partie 2: Balise head
+        printf("Partie 2: Balise head\n");
+        result = fprintf(file, "<head>\n"
+                               "    <meta charset=\"UTF-8\">\n"
+                               "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+                               "    <title>%s</title>\n"
+                               "    <style>\n"
+                               "        body {\n"
+                               "            font-family: 'Arial', sans-serif;\n"
+                               "            margin: 0;\n"
+                               "            padding: 0;\n"
+                               "            box-sizing: border-box;\n"
+                               "            background-color: #f9f9f9;\n"
+                               "            color: #333;\n"
+                               "        }\n"
+                               "        header {\n"
+                               "            background-color: #003366;\n"
+                               "            color: #fff;\n"
+                               "            padding: 20px;\n"
+                               "            text-align: center;\n"
+                               "        }\n"
+                               "        nav ul {\n"
+                               "            list-style: none;\n"
+                               "            margin: 0;\n"
+                               "            padding: 0;\n"
+                               "            text-align: center;\n"
+                               "        }\n"
+                               "        nav li {\n"
+                               "            display: inline;\n"
+                               "            margin-right: 20px;\n"
+                               "        }\n"
+                               "        a {\n"
+                               "            text-decoration: none;\n"
+                               "            color: #333;\n"
+                               "        }\n"
+                               "        section {\n"
+                               "            padding: 20px;\n"
+                               "        }\n"
+                               "        .destination {\n"
+                               "            background-color: #fff;\n"
+                               "            margin: 10px;\n"
+                               "            padding: 20px;\n"
+                               "            border-radius: 8px;\n"
+                               "            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n"
+                               "        }\n"
+                               "        footer {\n"
+                               "            background-color: #003366;\n"
+                               "            color: #fff;\n"
+                               "            text-align: center;\n"
+                               "            padding: 10px;\n"
+                               "        }\n"
+                               "    </style>\n"
+                               "</head>\n");
+
+        if (result < 0) {
+            fprintf(stderr, "Erreur lors de l'écriture de la partie 2 dans le fichier HTML.\n");
+            fclose(file);
+            return;
+        }
+
+        // Partie 3: Balise body et div.container
+        printf("Partie 3: Balise body et div.container\n");
+        result = fprintf(file, "<body>\n"
+                               "    <div class=\"container\">\n");
+
+        if (result < 0) {
+            fprintf(stderr, "Erreur lors de l'écriture de la partie 3 dans le fichier HTML.\n");
+            fclose(file);
+            return;
+        }
+
+        // Partie 4: Header
+        printf("Partie 4: Header\n");
+        result = fprintf(file, "        <header>\n"
+                               "            <h1>%s</h1>\n"
+                               "            <p>%s</p>\n"
+                               "        </header>\n",
+                               name, slogan);
+
+        if (result < 0) {
+            fprintf(stderr, "Erreur lors de l'écriture de la partie 4 dans le fichier HTML.\n");
+            fclose(file);
+            return;
+        }
+
+        // Partie 5: Section A propos de nous
+        printf("Partie 5: Section A propos de nous\n");
+        result = fprintf(file, "        <section id=\"aboutUs\" class=\"section\">\n"
+                               "            <h2>A propos de nous</h2>\n"
+                               "            <p>%s</p>\n"
+                               "        </section>\n",
+                               about_us);
+
+        if (result < 0) {
+            fprintf(stderr, "Erreur lors de l'écriture de la partie 5 dans le fichier HTML.\n");
+            fclose(file);
+            return;
+        }
+
+        // Partie 6: Section Destinations
+        printf("Partie 6: Section Destinations\n");
+        printf("Destination Title: %s\n", destination_title);
+        printf("Destination Image: %s\n", destination_image);
+        printf("Destination Description: %s\n", destination_description);
+
+        result = fprintf(file, "        <section id=\"destinations\" class=\"section\">\n"
+                               "            <h2>Destinations Populaires</h2>\n"
+                               "            <div class=\"destination\">\n"
+                               "                <h3>%s</h3>\n"
+                               "                <img src=\"%s\" alt=\"%s\">\n"
+                               "                <p>%s</p>\n"
+                               "                <button>En savoir plus</button>\n"
+                               "            </div>\n"
+                               "        </section>\n",
+                               destination_title, destination_image,destination_image, destination_description);
+
+        if (result < 0) {
+            fprintf(stderr, "Erreur lors de l'écriture de la partie 6 dans le fichier HTML.\n");
+            fclose(file);
+            return;
+        }
+
+        // Partie 7: Section Offres Spéciales
+        printf("Partie 7: Section Offres Spéciales\n");
+        result = fprintf(file, "        <section id=\"specialOffers\" class=\"section\">\n"
+                               "            <h2>Offres Spéciales</h2>\n"
+                               "            <div class=\"destination\">\n"
+                               "                <h3>%s</h3>\n"
+                               "                <img src=\"%s\" alt=\"%s\">\n"
+                               "                <p>%s</p>\n"
+                               "                <button>Réservez maintenant</button>\n"
+                               "            </div>\n"
+                               "        </section>\n",
+                               special_offer_title, special_offer_image, special_offer_image, special_offer_description);
+
+        if (result < 0) {
+            fprintf(stderr, "Erreur lors de l'écriture de la partie 7 dans le fichier HTML.\n");
+            fclose(file);
+            return;
+        }
+
+        // Partie 8: Section Contact
+        printf("Partie 8: Section Contact\n");
+        result = fprintf(file, "        <section id=\"contact\" class=\"section\">\n"
+                               "            <h2>Contactez-nous</h2>\n"
+                               "            <p>%s</p>\n"
+                               "            <p>Email: <a href=\"mailto:%s\">%s</a></p>\n"
+                               "        </section>\n",
+                               contact_email, contact_email, contact_email);
+
+        if (result < 0) {
+            fprintf(stderr, "Erreur lors de l'écriture de la partie 8 dans le fichier HTML.\n");
+            fclose(file);
+            return;
+        }
+
+        // Partie 9: Footer
+        printf("Partie 9: Footer\n");
+        result = fprintf(file, "        <footer>\n"
+                               "            <p>%s</p>\n"
+                               "        </footer>\n"
+                               "    </div>\n"
+                               "</body>\n"
+                               "</html>\n",
+                               footer_text);
+
+        if (result < 0) {
+            fprintf(stderr, "Erreur lors de l'écriture de la partie 9 dans le fichier HTML.\n");
+            fclose(file);
+            return;
+        }
+
+        // Fermer le fichier
+        fclose(file);
+        printf("Fichier HTML généré avec succès : %s\n", filename);
+    } else {
+        // L'ouverture du fichier a échoué
+        fprintf(stderr, "Erreur lors de l'ouverture du fichier HTML de sortie.\n");
+    }
+    printf("Fin de la génération du site Web de voyage.\n");
+}
+
+//Celui là est divisé en plusieurs sections 
+void generate_CV(const char *name, const char *email, const char *phone, const char *linkedin, const char *job_title,
+                 const char *company, const char *job_date, const char *job_description,
+                 const char *education, const char *education_date,
+                 const char *skills, const char *download_link) {
+
+    char filename[256];
+    snprintf(filename, sizeof(filename), "Generated_Websites/CV_%s.html", name);
+
+    FILE *file = fopen(filename, "w");
+
+    if (file != NULL) {
+        int result;
+
+        // Partie 1: Doctype et balise html
+        result = fprintf(file, "<!DOCTYPE html>\n"
+                               "<html lang=\"en\">\n");
+
+        // Vérifier le résultat de l'écriture
+        if (result < 0) {
+            fprintf(stderr, "Erreur lors de l'écriture de la partie 1 dans le fichier HTML.\n");
+            fclose(file);
+            return;
+        }else{printf("partie 1 terminée");}
+
+        // Partie 2: Balise head
+        result = fprintf(file, "<head>\n"
+                               "    <meta charset=\"UTF-8\">\n"
+                               "    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n"
+                               "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+                               "    <title>%s - CV</title>\n"
+                               "    <style>\n"
+                               "        body {\n"
+                               "            font-family: Arial, sans-serif;\n"
+                               "            margin: 0;\n"
+                               "            padding: 0;\n"
+                               "            box-sizing: border-box;\n"
+                               "            background-color: #f4f4f4;\n"
+                               "        }\n"
+                               "        .container {\n"
+                               "            max-width: 800px;\n"
+                               "            margin: 50px auto;\n"
+                               "            background-color: #fff;\n"
+                               "            padding: 20px;\n"
+                               "            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n"
+                               "        }\n"
+                               "        h1, h2, h3 {\n"
+                               "            color: #333;\n"
+                               "        }\n"
+                               "        p {\n"
+                               "            color: #666;\n"
+                               "        }\n"
+                               "        .section {\n"
+                               "            margin-bottom: 20px;\n"
+                               "        }\n"
+                               "        #downloadButton {\n"
+                               "            display: block;\n"
+                               "            width: 100%;\n"
+                               "            padding: 10px;\n"
+                               "            background-color: #007bff;\n"
+                               "            color: #fff;\n"
+                               "            text-align: center;\n"
+                               "            text-decoration: none;\n"
+                               "            border: none;\n"
+                               "            border-radius: 5px;\n"
+                               "            cursor: pointer;\n"
+                               "            font-size: 16px;\n"
+                               "        }\n"
+                               "    </style>\n"
+                               "</head>\n");
+
+        // Vérifier le résultat de l'écriture
+        if (result < 0) {
+            fprintf(stderr, "Erreur lors de l'écriture de la partie 2 dans le fichier HTML.\n");
+            fclose(file);
+            return;
+        }else{printf("partie 2");}
+
+        // Partie 3: Balise body et div.container
+        result = fprintf(file, "<body>\n"
+                               "    <div class=\"container\">\n");
+
+        // Vérifier le résultat de l'écriture
+        if (result < 0) {
+            fprintf(stderr, "Erreur lors de l'écriture de la partie 3 dans le fichier HTML.\n");
+            fclose(file);
+            return;
+        }
+
+        // Partie 4: Header
+        result = fprintf(file, "        <header>\n"
+                               "            <h1>%s</h1>\n"
+                               "            <p>%s</p>\n"
+                               "        </header>\n",
+                               name, job_title);
+
+        // Vérifier le résultat de l'écriture
+        if (result < 0) {
+            fprintf(stderr, "Erreur lors de l'écriture de la partie 4 dans le fichier HTML.\n");
+            fclose(file);
+            return;
+        }
+
+        // Partie 5: Section Coordonnées
+        result = fprintf(file, "        <section class=\"section\">\n"
+                               "            <h2>Coordonnées</h2>\n"
+                               "            <p>Email: %s</p>\n"
+                               "            <p>Téléphone: %s</p>\n"
+                               "            <p>LinkedIn: %s</p>\n"
+                               "        </section>\n",
+                               email, phone, linkedin);
+
+        // Vérifier le résultat de l'écriture
+        if (result < 0) {
+            fprintf(stderr, "Erreur lors de l'écriture de la partie 5 dans le fichier HTML.\n");
+            fclose(file);
+            return;
+        }
+
+        // Partie 6: Section Expérience Professionnelle
+        result = fprintf(file, "        <section class=\"section\">\n"
+                               "            <h2>Expérience Professionnelle</h2>\n"
+                               "            <h3>%s - %s</h3>\n"
+                               "            <p>Date: %s</p>\n"
+                               "            <p>%s</p>\n"
+                               "        </section>\n",
+                               company, job_title, job_date, job_description);
+
+        // Vérifier le résultat de l'écriture
+        if (result < 0) {
+            fprintf(stderr, "Erreur lors de l'écriture de la partie 6 dans le fichier HTML.\n");
+            fclose(file);
+            return;
+        }
+
+        // Partie 7: Section Formation
+        result = fprintf(file, "        <section class=\"section\">\n"
+                               "            <h2>Formation</h2>\n"
+                               "            <h3>%s</h3>\n"
+                               "            <p>Date d'obtention: %s</p>\n"
+                               "        </section>\n",
+                               education, education_date);
+
+        // Vérifier le résultat de l'écriture
+        if (result < 0) {
+            fprintf(stderr, "Erreur lors de l'écriture de la partie 7 dans le fichier HTML.\n");
+            fclose(file);
+            return;
+        }
+
+        // Partie 8: Section Compétences
+        result = fprintf(file, "        <section class=\"section\">\n"
+                               "            <h2>Compétences</h2>\n"
+                               "            <p>%s</p>\n"
+                               "        </section>\n",
+                               skills);
+
+        // Vérifier le résultat de l'écriture
+        if (result < 0) {
+            fprintf(stderr, "Erreur lors de l'écriture de la partie 8 dans le fichier HTML.\n");
+            fclose(file);
+            return;
+        }
+
+        // Partie 9: Bouton Télécharger
+        result = fprintf(file, "        <a id=\"downloadButton\" href=\"%s\" download=\"%s\">Télécharger le CV</a>\n"
+                               "    </div>\n"
+                               "</body>\n"
+                               "</html>\n",
+                               download_link, name);
+
+        // Vérifier le résultat de l'écriture
+        if (result < 0) {
+            fprintf(stderr, "Erreur lors de l'écriture de la partie 9 dans le fichier HTML.\n");
+            fclose(file);
+            return;
+        }
+
+        // Fermer le fichier
+        fclose(file);
+        printf("Fichier HTML généré avec succès : %s\n", filename);
+    } else {
+        // L'ouverture du fichier a échoué
         fprintf(stderr, "Erreur lors de l'ouverture du fichier HTML de sortie.\n");
     }
 }
@@ -1066,18 +1459,12 @@ void initializeDatabase() {
             "about_us TEXT,"
             "header_title TEXT,"
             "header_description TEXT,"
-            "destination1_title TEXT,"
-            "destination1_image TEXT,"
-            "destination1_description TEXT,"
-            "destination2_title TEXT,"
-            "destination2_image TEXT,"
-            "destination2_description TEXT,"
-            "special_offer1_title TEXT,"
-            "special_offer1_image TEXT,"
-            "special_offer1_description TEXT,"
-            "special_offer2_title TEXT,"
-            "special_offer2_image TEXT,"
-            "special_offer2_description TEXT,"
+            "destination_title TEXT,"
+            "destination_image TEXT,"
+            "destination_description TEXT,"
+            "special_offer_title TEXT,"
+            "special_offer_image TEXT,"
+            "special_offer_description TEXT,"
             "contact_email TEXT,"
             "footer_text TEXT"
             ");"
@@ -1159,10 +1546,8 @@ void initializeDatabase() {
                 "INSERT INTO Travel_Website ("
                 "name, slogan, about_us,"
                 "header_title, header_description,"
-                "destination1_title, destination1_image, destination1_description,"
-                "destination2_title, destination2_image, destination2_description,"
-                "special_offer1_title, special_offer1_image, special_offer1_description,"
-                "special_offer2_title, special_offer2_image, special_offer2_description,"
+                "destination_title, destination_image, destination_description,"
+                "special_offer_title, special_offer_image, special_offer_description,"
                 "contact_email, footer_text)"
                 "SELECT"
                 "'Nom de l''Agence',"
@@ -1170,28 +1555,22 @@ void initializeDatabase() {
                 "'Découvrez des destinations extraordinaires et vivez des expériences inoubliables.',"
                 "'Explorez le Monde',"
                 "'Découvrez des destinations extraordinaires et vivez des expériences inoubliables.',"
-                "'Paris, France',"
-                "'paris.jpg',"
-                "'Découvrez la Ville Lumière avec ses monuments emblématiques.',"
                 "'Tokyo, Japon',"
                 "'tokyo.jpg',"
                 "'Explorez la modernité et la tradition dans la capitale du Japon.',"
                 "'Voyage tout compris à Bali',"
                 "'bali.jpg',"
                 "'Profitez de plages paradisiaques et d''une expérience culturelle unique.',"
-                "'Croisière dans les Caraïbes',"
-                "'caraibes.jpg',"
-                "'Partez pour une aventure en mer à la découverte des îles des Caraïbes.',"
                 "'info@agencedevoyage.com',"
                 "'&copy; 2024 Agence de Voyage. Tous droits réservés.'"
                 "WHERE NOT EXISTS (SELECT 1 FROM Travel_Website LIMIT 1);"
             ;
-            
+
             if (sqlite3_exec(db, insertTemplateTravel, 0, 0, &errMsg) != SQLITE_OK) {
                 fprintf(stderr, "Erreur lors de l'insertion du tuple template travel: %s\n", errMsg);
                 sqlite3_free(errMsg);
             } else {
-                printf("Template du blog ajouté avec succès.\n");
+                printf("Template du site de l'agence de voyage ajouté avec succès.\n");
             } 
 
     //test pour voir l'état de la BDD (à supprimer)
@@ -1206,7 +1585,6 @@ void initializeDatabase() {
     }
     
     //Fin du test
-
         // Fermer la base de données
         sqlite3_close(db);
     } else {
@@ -1215,8 +1593,36 @@ void initializeDatabase() {
 }
 
 int main(int argc, char *argv[]) {
-    int status;
+    /*
+    generate_CV("Djouaher Rachid",
+                "john.doe@example.com",
+                "123-456-7890",
+                "linkedin.com/in/johndoe",
+                "Développeur Web",
+                "ABC Company",
+                "Janvier 2020 - Présent",
+                "Travailleur acharné sur des projets passionnants.",
+                "Baccalauréat en Informatique",
+                "Mai 2018",
+                "HTML, CSS, JavaScript, C++",
+                "lien_de_telechargement_du_CV.html");
+    */
+    generate_Travel_Website(
+        "Bonjour",               // Nom du site
+        "Explorez le monde avec nous",// Slogan
+        "Nous sommes une agence de voyage passionnée par la découverte de nouveaux horizons.", // À propos de nous
+        "Destination exotique",       // Titre de la destination
+        "destination_image.jpg",      // Image de la destination
+        "Découvrez une destination exotique avec des plages magnifiques et une culture unique.", // Description de la destination
+        "Offre spéciale de l'été",    // Titre de l'offre spéciale
+        "special_offer_image.jpg",    // Image de l'offre spéciale
+        "Réservez maintenant et profitez de réductions exceptionnelles sur nos forfaits vacances.", // Description de l'offre spéciale
+        "contact@mytravelsite.com",   // Email de contact
+        "© 2024 My Travel Site"       // Texte du pied de page
+    );
 
+
+    int status;
     // Initialiser GTK
     gtk_init(&argc, &argv);
     app = gtk_application_new("projet.c", G_APPLICATION_DEFAULT_FLAGS);
@@ -1224,7 +1630,7 @@ int main(int argc, char *argv[]) {
 
     // Initialiser la base de données
     initializeDatabase();
-
+    
     // Exécuter l'application GTK
     status = g_application_run(G_APPLICATION(app), argc, argv);
     g_object_unref(app);
