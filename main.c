@@ -18,7 +18,6 @@ static void activate_Commerce(GtkApplication *app, gpointer user_data);
 static void activate_Travel(GtkApplication *app, gpointer user_data);
 static void activate_CV(GtkApplication *app, gpointer user_data);
 
-
 //Protoypes des procédures créant les codes HTML
 void generate_Entreprise_Website(const char *name, const char *about, const char *slogan, const char *contact,
                   const char *service1_name, const char *service1_description,
@@ -1926,9 +1925,9 @@ void openFileInBrowser(const char *filePath) {
 }
 
 int main(int argc, char *argv[]) {
+  
     // Obtenir le chemin du répertoire de travail
     _getcwd(currentDirectory, sizeof(currentDirectory));
-
 
     int status;
     // Initialiser GTK
