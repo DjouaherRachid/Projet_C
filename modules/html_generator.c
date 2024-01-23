@@ -6,7 +6,7 @@ char currentDirectory[FILENAME_MAX];
 
 
 //Site vitrine d'entreprise
-void generate_Entreprise_Website(const char *name, const char *about, const char *slogan, const char *contact, 
+void generate_Company_Website(const char *name, const char *about, const char *slogan, const char *contact, 
                   const char *service1_name, const char *service1_description,
                   const char *service2_name, const char *service2_description,
                   const char *body_color, const char *body_font_family,
