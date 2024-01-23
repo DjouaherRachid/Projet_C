@@ -70,7 +70,7 @@ void generate_Entreprise_Website(const char *name, const char *about, const char
                   const char *a_text_color, const char *footer_bg_color,
                   const char *footer_text_color, const char *hero_bg_color) {
     char filename[256]; 
-    snprintf(filename, sizeof(filename), "Generated_Websites/Entreprise_%s.html", name);
+    snprintf(filename, sizeof(filename), "Generated_Websites\\Entreprise_%s.html", name);
     
     FILE *file = fopen(filename, "w");
 
@@ -180,7 +180,7 @@ void generate_Entreprise_Website(const char *name, const char *about, const char
     //Ouvrir le fichier html créé
     // Chemin complet du fichier HTML
     char fullPath[FILENAME_MAX];
-    sprintf(fullPath, "%s/%s", currentDirectory, filename);
+    sprintf(fullPath, "%s\\%s", currentDirectory, filename);
     // Commande pour ouvrir le fichier
     char command[512];
     sprintf(command, "start %s", fullPath);
