@@ -525,7 +525,8 @@ void fill_load_page_grid(GtkWidget *grid) {
     const char *table_names[] = {"Entreprise_Website", "Blog", "ECommerce_Website", "Travel_Website", "CV_Website"};
     const char *column_names[] = {"name", "blog_title", "site_name", "name", "name"};
 
-    for (int i = 0; i < G_N_ELEMENTS(table_names); i++) {
+    sqlite3_open("DataBase.db", &db);
+    for (int i = 0; i < 5; i++) {
         // Construction de la requête SQL
         query = g_strdup_printf("SELECT id, %s FROM %s;", column_names[i], table_names[i]);
 
@@ -543,18 +544,20 @@ void fill_load_page_grid(GtkWidget *grid) {
         gtk_grid_attach(GTK_GRID(grid), table_label, 0, i, 1, 1);
 
         // Exécute la requête
+        int line=0;
         while ((result = sqlite3_step(stmt)) == SQLITE_ROW) {
+            line-=-1;
             // Récupère l'ID et le nom de la ligne
             int id = sqlite3_column_int(stmt, 0);
             const char *name = (const char *)sqlite3_column_text(stmt, 1);
 
             // Crée une étiquette pour le nom de la ligne
             GtkWidget *name_label = gtk_label_new(name);
-            gtk_grid_attach(GTK_GRID(grid), name_label, 1, i, 1, 1);
+            gtk_grid_attach(GTK_GRID(grid), name_label, line*2-1, i, 1, 1);
 
             // Crée un bouton "Sélectionner" pour chaque ligne
             GtkWidget *select_button = gtk_button_new_with_label("Sélectionner");
-            gtk_grid_attach(GTK_GRID(grid), select_button, 2, i, 1, 1);
+            gtk_grid_attach(GTK_GRID(grid), select_button, line*2, i, 1, 1);
 
             // Connecte le signal "clicked" à une fonction de rappel pour gérer la sélection
             g_signal_connect(select_button, "clicked", G_CALLBACK(activate_Blog), GINT_TO_POINTER(id));
@@ -562,8 +565,34 @@ void fill_load_page_grid(GtkWidget *grid) {
 
         // Libère la mémoire du résultat de la requête
         sqlite3_finalize(stmt);
+   
+    }
+    sqlite3_close(db);
+}
+
+
+void load_page(int page_type, int page_id, sqlite3 *db){
+    int n_args;
+    switch (page_type) {
+        case 0: 
+            n_args=16;
+            break;
+        case 1:
+            n_args=10; 
+            break;
+        case 2:
+            n_args=18;
+            break;
+        case 3:
+            n_args=13;
+            break;
+        case 4:
+            n_args=12;
+            break;
+
     }
 }
+
 
 //Cette fonction sert à créer une box contenant un label titre et un bouton "select" pour chaque template dans le menu
 GtkWidget *create_template_widget(const char *template_name) {
