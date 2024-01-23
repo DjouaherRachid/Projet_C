@@ -29,12 +29,16 @@ https://www.gtk.org/docs/installations/windows
 SQLite est une bibliothèque en langage C qui implémente un petit moteur de base de données SQL rapide, autonome, de haute fiabilité et complet.  
 Les fichiers .c et /h de la bibliothèque sont intégrés dans le dossier sqlite du projet.  
 ### Curl
+cURL est un logiciel et une bibliothèque permettant d'effectuer des requêtes HTTP.
+La bibliothèque libcurl permet à l'application de récupérer des ressources sur le web comme des images.
+On peut l'installer à l'adresse suivante : 
+https://curl.se/download.html
 ## Configuration de l'environnement de développement
 Ce projet a été développé sur l'IDE virtual studio code et a été pensé pour être exécuté grâce à celui-ci.
 Pour l'exécuter vous aurez besoin d'un compilateur C tel que gcc.
 Sur une machine linux, la compilation et l'exécution sont censées pouvoir se réaliser grâce à la commande suivante: 
 ```
-gcc $(pkg-config gtk+-3.0 --cflags) "${file}" -o "${fileDirname}/${fileBasenameNoExtension}.exe" -lsqlite3 $(pkg-config gtk+-3.0 --libs)
+gcc $(pkg-config gtk+-3.0 --cflags) $(pkg-config libcurl --cflags) "${file}" -o "${fileDirname}/${fileBasenameNoExtension}.exe" -lsqlite3 $(pkg-config gtk+-3.0 --libs) $(pkg-config libcurl --libs)
 ```
 Sur windows, sur vscode,il suffit d'installer l'extension Microsoft C/C++ puis d'ajouter le chemin de votre compilateur ainsi que les include path nécessaires (gtk-3.0,glib-2.0,/mingw64/include/**,mingw64/lib/**,atk-1.0) dans la configuration:
 ![image](https://github.com/DjouaherRachid/Projet_C/assets/152193959/dfac1ff7-59d4-4f71-9a53-c6a24ed899af)
