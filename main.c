@@ -613,7 +613,7 @@ GtkWidget *create_menu_window(GtkApplication *app) {
     GtkWidget *notebook = gtk_notebook_new();
     gtk_notebook_set_tab_pos(GTK_NOTEBOOK(notebook), GTK_POS_LEFT);
 
-    const char *tab_labels[] = {"Create page from template", "Create page from scratch", "Load page"};
+    const char *tab_labels[] = {"Create page from template",  "Load page"};
 
     for (int i = 0; i < G_N_ELEMENTS(tab_labels); i++) {
         GtkWidget *page = gtk_grid_new();
@@ -625,25 +625,7 @@ GtkWidget *create_menu_window(GtkApplication *app) {
         gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page, label);
 
         switch (i) {
-            case 1:
-                GtkWidget *large_label = gtk_label_new("Create a page from scratch");
-                PangoFontDescription *large_font_desc = pango_font_description_from_string("Sans 24");
-                gtk_widget_override_font(large_label, large_font_desc);
-                gtk_grid_attach(GTK_GRID(page), large_label, 0, 0, 1, 1);
-
-                // Ajouter un bouton "Start"
-                GtkWidget *start_button = gtk_button_new_with_label("Start");
-                gtk_widget_set_size_request(start_button, 200, 100);
-                gtk_grid_attach(GTK_GRID(page), start_button, 0, 1, 1, 1);
-                gtk_widget_set_hexpand(start_button, TRUE);
-                gtk_widget_set_vexpand(start_button, TRUE);
-                gtk_widget_set_halign(start_button, GTK_ALIGN_CENTER);
-                gtk_widget_set_valign(start_button, GTK_ALIGN_CENTER);
-
-                // Connecter une fonction de rappel pour le bouton "Start" 
-                // g_signal_connect(start_button, "clicked", G_CALLBACK(start_button_clicked), NULL);
-                break;
-
+        
             case 0:
                 // Créer le titre "Create a page from template"
                 GtkWidget *template_label = gtk_label_new("Create a page from template");
@@ -685,7 +667,7 @@ GtkWidget *create_menu_window(GtkApplication *app) {
                 gtk_grid_attach(GTK_GRID(page), templates_box, 0, 0, 1, 1);
                 break;
 
-            case 2: // "Load page"
+            case 1: // "Load page"
             {
                 GtkWidget *template_label = gtk_label_new("Load created page from database");
                 PangoFontDescription *template_font_desc = pango_font_description_from_string("Sans 24");
