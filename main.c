@@ -4,6 +4,10 @@
 #include "sqlite/sqlite3.h"
 #include "sqlite/sqlite3.c"
 #include <gtk/gtk.h>
+#include <windows.h>
+
+//Chemin du repertoire de travail
+char currentDirectory[FILENAME_MAX];
 
 //Prototypes des procédures lançant les différentes fenêtres du projet
 static void launch(GtkApplication *app, gpointer user_data);
@@ -13,6 +17,7 @@ static void activate_Blog(GtkApplication *app, gpointer user_data);
 static void activate_Commerce(GtkApplication *app, gpointer user_data);
 static void activate_Travel(GtkApplication *app, gpointer user_data);
 static void activate_CV(GtkApplication *app, gpointer user_data);
+
 
 //Protoypes des procédures créant les codes HTML
 void generate_Entreprise_Website(const char *name, const char *about, const char *slogan, const char *contact,
@@ -169,10 +174,19 @@ void generate_Entreprise_Website(const char *name, const char *about, const char
                       about, contact, name);
 
         fclose(file);
-        printf("Fichier HTML généré avec succès : %s\n", "Generated.html");
+        printf("Fichier HTML généré avec succès : %s\n", filename);
     } else {
         fprintf(stderr, "Erreur lors de l'ouverture du fichier HTML de sortie.\n");
     }
+    //Ouvrir le fichier html créé
+    // Chemin complet du fichier HTML
+    char fullPath[FILENAME_MAX];
+    sprintf(fullPath, "%s/%s", currentDirectory, filename);
+    // Commande pour ouvrir le fichier
+    char command[512];
+    sprintf(command, "start %s", fullPath);
+    // Exécuter la commande
+    system(command);
 }
 
 //Blog
@@ -255,6 +269,15 @@ void generate_Personal_Blog(const char *blog_title, const char *blog_description
     } else {
         fprintf(stderr, "Erreur lors de l'ouverture du fichier HTML de sortie.\n");
     }
+    //Ouvrir le fichier html créé
+    // Chemin complet du fichier HTML
+    char fullPath[FILENAME_MAX];
+    sprintf(fullPath, "%s/%s", currentDirectory, filename);
+    // Commande pour ouvrir le fichier
+    char command[512];
+    sprintf(command, "start %s", fullPath);
+    // Exécuter la commande
+    system(command);
 }
 
 //Site d'e-commerce
@@ -267,7 +290,7 @@ void generate_ECommerce_Site(const char *site_name, const char *site_description
                             const char *contact_email, const char *footer_text) {
 
     char filename[256];
-    snprintf(filename, sizeof(filename), "Generated_Websites/ECommerce_Website_%s.html", site_name);
+    snprintf(filename, sizeof(filename), "Generated_Websites/ECommerce_%s.html", site_name);
 
     FILE *file = fopen(filename, "w");
 
@@ -358,6 +381,15 @@ void generate_ECommerce_Site(const char *site_name, const char *site_description
     } else {
         fprintf(stderr, "Erreur lors de l'ouverture du fichier HTML de sortie.\n");
     }
+    //Ouvrir le fichier html créé
+    // Chemin complet du fichier HTML
+    char fullPath[FILENAME_MAX];
+    sprintf(fullPath, "%s/%s", currentDirectory, filename);
+    // Commande pour ouvrir le fichier
+    char command[512];
+    sprintf(command, "start %s", fullPath);
+    // Exécuter la commande
+    system(command);
 }
 
 void generate_Travel_Website(const char *name, const char *slogan, const char *about_us,
@@ -567,6 +599,15 @@ void generate_Travel_Website(const char *name, const char *slogan, const char *a
         fprintf(stderr, "Erreur lors de l'ouverture du fichier HTML de sortie.\n");
     }
     printf("Fin de la génération du site Web de voyage.\n");
+    //Ouvrir le fichier html créé
+    // Chemin complet du fichier HTML
+    char fullPath[FILENAME_MAX];
+    sprintf(fullPath, "%s/%s", currentDirectory, filename);
+    // Commande pour ouvrir le fichier
+    char command[512];
+    sprintf(command, "start %s", fullPath);
+    // Exécuter la commande
+    system(command);
 }
 
 
@@ -755,6 +796,15 @@ void generate_CV(const char *name, const char *email, const char *phone, const c
         // L'ouverture du fichier a échoué
         fprintf(stderr, "Erreur lors de l'ouverture du fichier HTML de sortie.\n");
     }
+    //Ouvrir le fichier html créé
+    // Chemin complet du fichier HTML
+    char fullPath[FILENAME_MAX];
+    sprintf(fullPath, "%s/%s", currentDirectory, filename);
+    // Commande pour ouvrir le fichier
+    char command[512];
+    sprintf(command, "start %s", fullPath);
+    // Exécuter la commande
+    system(command);
 }
 
 // Fonction de rappel pour le bouton "OK" après avoir ajouté un site à la BDD
@@ -1086,7 +1136,7 @@ GtkWidget *create_form(GtkApplication *app, const char *form_title, const char *
         "Un slogan pour l'entreprise", "Adresse, numéro de téléphone, formulaire de contact, etc.", 
         "Service 1", "Description du service 1", 
         "Service 2", "Description du service 2", 
-        "#f4f4f4", "Arial, sans-serif", 
+        "#000000", "Arial, sans-serif", 
         "#333", "#fff", "#fff", "#333", "#fff", "#f4f4f4"
     };
     type=1;
@@ -1228,6 +1278,56 @@ GtkWidget *create_form(GtkApplication *app, const char *form_title, const char *
     return custom_form;
 }
 
+//Sert à remplir l'onglet "Load Page"
+void fill_load_page_grid(GtkWidget *grid) {
+    // Variables pour stocker le résultat de la requête
+    sqlite3_stmt *stmt;
+    const char *query;
+    
+    // Nom de la table et les colonnes dont nous avons besoin
+    const char *table_names[] = {"Entreprise_Website", "Blog", "ECommerce_Website", "Travel_Website", "CV_Website"};
+    const char *column_names[] = {"name", "blog_title", "site_name", "name", "name"};
+
+    for (int i = 0; i < G_N_ELEMENTS(table_names); i++) {
+        // Construction de la requête SQL
+        query = g_strdup_printf("SELECT id, %s FROM %s;", column_names[i], table_names[i]);
+
+        // Préparation et exécution de la requête SQL
+        sqlite3_prepare_v2(db, query, -1, &stmt, NULL);
+
+        // Libération de la mémoire de la requête
+        g_free((gpointer)query);
+
+        // Variable pour stocker le résultat de sqlite3_step
+        int result;
+
+        // Créer des étiquettes pour le nom de la table
+        GtkWidget *table_label = gtk_label_new(table_names[i]);
+        gtk_grid_attach(GTK_GRID(grid), table_label, 0, i, 1, 1);
+
+        // Exécute la requête
+        while ((result = sqlite3_step(stmt)) == SQLITE_ROW) {
+            // Récupère l'ID et le nom de la ligne
+            int id = sqlite3_column_int(stmt, 0);
+            const char *name = (const char *)sqlite3_column_text(stmt, 1);
+
+            // Crée une étiquette pour le nom de la ligne
+            GtkWidget *name_label = gtk_label_new(name);
+            gtk_grid_attach(GTK_GRID(grid), name_label, 1, i, 1, 1);
+
+            // Crée un bouton "Sélectionner" pour chaque ligne
+            GtkWidget *select_button = gtk_button_new_with_label("Sélectionner");
+            gtk_grid_attach(GTK_GRID(grid), select_button, 2, i, 1, 1);
+
+            // Connecte le signal "clicked" à une fonction de rappel pour gérer la sélection
+            g_signal_connect(select_button, "clicked", G_CALLBACK(activate_Blog), GINT_TO_POINTER(id));
+        }
+
+        // Libère la mémoire du résultat de la requête
+        sqlite3_finalize(stmt);
+    }
+}
+
 //Cette fonction sert à créer une box contenant un label titre et un bouton "select" pour chaque template dans le menu
 GtkWidget *create_template_widget(const char *template_name) {
     GtkWidget *template_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -1347,9 +1447,42 @@ GtkWidget *create_menu_window(GtkApplication *app) {
                 gtk_widget_set_valign(templates_box, GTK_ALIGN_CENTER);
                 gtk_grid_attach(GTK_GRID(page), templates_box, 0, 0, 1, 1);
                 break;
-            
+
+            case 2: // "Load page"
+            {
+                GtkWidget *template_label = gtk_label_new("Load created page from database");
+                PangoFontDescription *template_font_desc = pango_font_description_from_string("Sans 24");
+                gtk_widget_override_font(template_label, template_font_desc);
+
+                // Centrer horizontalement le titre
+                GtkWidget *title_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+                gtk_widget_set_hexpand(title_box, TRUE);
+                gtk_widget_set_halign(title_box, GTK_ALIGN_CENTER);
+
+                gtk_box_pack_start(GTK_BOX(title_box), template_label, FALSE, FALSE, 0);
+                // Créer la grille pour l'onglet Load Page
+                GtkWidget *load_page_grid = gtk_grid_new();
+                gtk_grid_set_row_homogeneous(GTK_GRID(load_page_grid), TRUE);
+
+                // Ajouter une barre de défilement
+                GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+                gtk_container_add(GTK_CONTAINER(scrolled_window), load_page_grid);
+                gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+                // Ajouter la barre de défilement à la grille principale
+                gtk_grid_attach(GTK_GRID(page), title_box, 0, 0, 1, 1);  // Ajout du titre à la grille principale
+                gtk_grid_attach(GTK_GRID(page), scrolled_window, 0, 1, 1, 1);  // Ajout de la barre de défilement
+
+                // Définir l'expansion de l'onglet Load Page pour qu'il prenne autant d'espace que les autres onglets
+                gtk_widget_set_hexpand(scrolled_window, TRUE);
+                gtk_widget_set_vexpand(scrolled_window, TRUE);
+
+                // Appeler une fonction pour remplir la grille avec les données de la BDD
+                fill_load_page_grid(load_page_grid);
+            }
+            break;
             default:
-                break;
+            break;
         }
     }
 
@@ -1362,7 +1495,7 @@ GtkWidget *create_menu_window(GtkApplication *app) {
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
 
     return window;
-}
+}   
 
 //Fenêtre de connexion
 GtkWidget *create_login_window(GtkApplication *app) {
@@ -1787,12 +1920,14 @@ void initializeDatabase() {
     }
 }
 
+
+void openFileInBrowser(const char *filePath) {
+    ShellExecute(NULL, "open", filePath, NULL, NULL, SW_SHOWNORMAL);
+}
+
 int main(int argc, char *argv[]) {
-    generate_Travel_Website("Nom de l'Agence", "Votre prochaine aventure commence ici.", "Découvrez des destinations extraordinaires et vivez des expériences inoubliables.",
-                        "Explorez le Monde", "Découvrez des destinations extraordinaires et vivez des expériences inoubliables.", "Tokyo, Japon", "tokyo.jpg",
-                        "Explorez la modernité et la tradition dans la capitale du Japon.", "Voyage tout compris à Bali", "bali.jpg",
-                        "Profitez de plages paradisiaques et d'une expérience culturelle unique.", "info@agencedevoyage.com",
-                        "&copy; 2024 Agence de Voyage. Tous droits réservés.");
+    // Obtenir le chemin du répertoire de travail
+    _getcwd(currentDirectory, sizeof(currentDirectory));
 
 
     int status;
