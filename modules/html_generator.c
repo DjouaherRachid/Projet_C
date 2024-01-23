@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <windows.h>
 #include <string.h>
+//#include "curlfunc.c"
 
 char currentDirectory[FILENAME_MAX];
 
@@ -354,7 +355,7 @@ void generate_Personal_Blog(const char *blog_title, const char *blog_description
 
     printf("%s",command);
     // Exécuter la commande
-    system(command);
+    system(command);   
 }
 
 void generate_Travel_Website(const char *name, const char *slogan, const char *about_us,
@@ -489,16 +490,23 @@ void generate_Travel_Website(const char *name, const char *slogan, const char *a
         printf("Destination Image: %s\n", destination_image);
         printf("Destination Description: %s\n", destination_description);
 
+
+        /* char filename1[FILENAME_MAX];
+        snprintf(filename1, sizeof(filename1), "Generated_Websites\\Travel_%s1.png", name);
+        download_image(destination_image,filename1); */
+        
+        
+
         result = fprintf(file, "        <section id=\"destinations\" class=\"section\">\n"
                                "            <h2>Destinations Populaires</h2>\n"
                                "            <div class=\"destination\">\n"
                                "                <h3>%s</h3>\n"
-                               "                <img src=\"%s\" alt=\"%s\">\n"
+                               "                <img src=\"Travel_%s1.png\" alt=\"image1\">\n"
                                "                <p>%s</p>\n"
                                "                <button>En savoir plus</button>\n"
                                "            </div>\n"
                                "        </section>\n",
-                               destination_title, destination_image, destination_image, destination_description);
+                               destination_title, name, destination_image, destination_description);
 
         if (result < 0) {
             fprintf(stderr, "Erreur lors de l'écriture de la partie 6 dans le fichier HTML.\n");
@@ -507,17 +515,22 @@ void generate_Travel_Website(const char *name, const char *slogan, const char *a
         }
 
         // Partie 7: Section Offres Spéciales
+
+          /* char filename2[FILENAME_MAX];
+        snprintf(filename2, sizeof(filename2), "Generated_Websites\\Travel_%s2.png", name);
+        download_image(destination_image,filename2); */
+        
         printf("Partie 7: Section Offres Spéciales\n");
         result = fprintf(file, "        <section id=\"specialOffers\" class=\"section\">\n"
                                "            <h2>Offres Spéciales</h2>\n"
                                "            <div class=\"destination\">\n"
                                "                <h3>%s</h3>\n"
-                               "                <img src=\"%s\" alt=\"%s\">\n"
+                               "                <img src=\"Travel_%s2.png\" alt=\"%s\">\n"
                                "                <p>%s</p>\n"
                                "                <button>Réservez maintenant</button>\n"
                                "            </div>\n"
                                "        </section>\n",
-                               special_offer_title, special_offer_image, special_offer_image, special_offer_description);
+                               special_offer_title, name, special_offer_image, special_offer_description);
 
         if (result < 0) {
             fprintf(stderr, "Erreur lors de l'écriture de la partie 7 dans le fichier HTML.\n");
