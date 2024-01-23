@@ -1,6 +1,6 @@
 /.dist
 /.vscode
 /.idea
-/.Generated_Websites
+/Generated_Websites
 main.exe
 DataBase.db
