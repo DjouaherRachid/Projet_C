@@ -30,5 +30,15 @@ SQLite est une bibliothèque en langage C qui implémente un petit moteur de bas
 Les fichiers .c et /h de la bibliothèque sont intégrés dans le dossier sqlite du projet.  
 ### Curl
 ## Configuration de l'environnement de développement
+Ce projet a été développé sur l'IDE virtual studio code et a été pensé pour être exécuté grâce à celui-ci.
+Pour l'exécuter vous aurez besoin d'un compilateur C tel que gcc.
+Sur une machine linux, la compilation et l'exécution sont censées pouvoir se réaliser grâce à la commande suivante: 
+```
+gcc $(pkg-config gtk+-3.0 --cflags) "${file}" -o "${fileDirname}/${fileBasenameNoExtension}.exe" -lsqlite3 $(pkg-config gtk+-3.0 --libs)
+```
+Sur windows, sur vscode,il suffit d'installer l'extension Microsoft C/C++ puis d'ajouter le chemin de votre compilateur ainsi que les include path nécessaires (gtk-3.0,glib-2.0,/mingw64/include/**,mingw64/lib/**,atk-1.0) dans la configuration:
+![image](https://github.com/DjouaherRachid/Projet_C/assets/152193959/dfac1ff7-59d4-4f71-9a53-c6a24ed899af)
+Lancer une première compilation devrait générer un dossier .vscode. Dans celui, il faut modifier le fichier tasks.json afin d'ajouter tous les paramètres de la compilation par ligne de commande:
+![image](https://github.com/DjouaherRachid/Projet_C/assets/152193959/f033c23e-5456-451a-8519-682f5cddf736)
 ## Documentation du code source
 ## Structure de la base de données
